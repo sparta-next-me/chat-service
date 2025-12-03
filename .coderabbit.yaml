@@ -12,7 +12,5 @@ reviews:
     drafts: false
     base_branches:
       - ".*"
-      - "feature/*"
-      - "dev"
 chat:
   auto_reply: true
