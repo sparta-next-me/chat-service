@@ -1,0 +1,7 @@
+spring:
+  application:
+    name: chat-server
+  #config server 임시 차단
+  cloud:
+    config:
+      enabled: false
