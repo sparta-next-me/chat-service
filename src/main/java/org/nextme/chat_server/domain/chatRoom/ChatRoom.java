@@ -42,4 +42,16 @@ public class ChatRoom extends BaseEntity {
         this.lastMessageId = lastMessageId;
     }
 
+    // 채팅방 생성
+    public static ChatRoom create(RoomType roomType, String title) {
+        return ChatRoom.builder()
+                .roomType(roomType)
+                .title(title)
+                .build();
+    }
+
+    // 최근 메세지 업데이트
+    public void updateLastMessage(ChatMessageId lastMessageId) {
+        this.lastMessageId = lastMessageId;
+    }
 }

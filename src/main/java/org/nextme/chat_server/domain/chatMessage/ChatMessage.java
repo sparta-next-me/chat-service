@@ -31,7 +31,7 @@ public class ChatMessage extends BaseEntity {
     @Column(nullable=false)
     UUID senderId; // 전송자 ID
 
-    @Column(nullable=false)
+    @Column(nullable=false, length=255)
     String content; // 메세지 내용
 
     @Builder
@@ -41,4 +41,26 @@ public class ChatMessage extends BaseEntity {
         this.senderId = senderId;
         this.content = content;
     }
+
+    // 메세지 생성
+    public static ChatMessage create(ChatRoomId chatRoomId, UUID senderId, String content) {
+        validate(content);
+
+        return ChatMessage.builder()
+                .chatRoomId(chatRoomId)
+                .senderId(senderId)
+                .content(content)
+                .build();
+    }
+
+    // 메세지 검증
+    private static void validate(String content) {
+        if (content == null || content.isBlank()) {
+            throw new IllegalArgumentException("메세지 내용이 비어있습니다.");
+        }
+        if (content.length() > 255) {
+            throw new IllegalArgumentException("메세지는 255자를 초과할 수 없습니다.");
+        }
+    }
+
 }

@@ -53,4 +53,29 @@ public class ChatRoomMember extends BaseEntity {
         this.status = status;
         this.lastReadMessageId = lastReadMessageId;
     }
+
+    // 채팅방 참여
+    public static ChatRoomMember join(ChatRoomId chatRoomId, UUID userId, MemberRole role) {
+        return ChatRoomMember.builder()
+                .chatRoomId(chatRoomId)
+                .userId(userId)
+                .role(role)
+                .status(MemberStatus.JOINED)
+                .build();
+    }
+
+    // 채팅방 퇴장
+    public void leave(){
+        this.status = MemberStatus.LEFT;
+    }
+
+    // 읽음 처리
+    public void updateLastReadMessage(ChatMessageId messageId) {
+        this.lastReadMessageId = messageId;
+    }
+
+    // 채팅방 참가 여부 체크
+    public boolean isJoined(){
+        return MemberStatus.JOINED.equals(this.status);
+    }
 }
