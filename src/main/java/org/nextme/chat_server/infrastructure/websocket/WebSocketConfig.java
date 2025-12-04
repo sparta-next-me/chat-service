@@ -1,6 +1,8 @@
 package org.nextme.chat_server.infrastructure.websocket;
 
 import lombok.RequiredArgsConstructor;
+import org.nextme.chat_server.infrastructure.security.JwtProvider;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.messaging.simp.config.ChannelRegistration;
 import org.springframework.messaging.simp.config.MessageBrokerRegistry;
@@ -16,7 +18,12 @@ import org.springframework.web.socket.config.annotation.WebSocketMessageBrokerCo
 @RequiredArgsConstructor
 public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
-    private final StompAuthChannelInterceptor stompAuthChannelInterceptor;
+    private final JwtProvider jwtProvider;
+
+    @Bean
+    public StompAuthChannelInterceptor stompAuthChannelInterceptor(){
+        return new StompAuthChannelInterceptor(jwtProvider); // jwtProvider 주입
+    }
 
     // WebSocket endpoint 등록, SockJS 지원(ws 연결 불가할시 대안)
     @Override
@@ -35,8 +42,9 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
         registry.setApplicationDestinationPrefixes("/app"); // 클라이언트 전송 prefix
     }
 
+    // 웹소켓 인터셉터 등록
     @Override
     public void configureClientInboundChannel(ChannelRegistration registration) {
-        registration.interceptors(stompAuthChannelInterceptor);
+        registration.interceptors(stompAuthChannelInterceptor());
     }
 }

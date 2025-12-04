@@ -15,7 +15,6 @@ import java.util.UUID;
 /**
  * 웹소켓 전용 jwt 인증
  */
-@Component
 @RequiredArgsConstructor
 public class StompAuthChannelInterceptor implements ChannelInterceptor {
 
