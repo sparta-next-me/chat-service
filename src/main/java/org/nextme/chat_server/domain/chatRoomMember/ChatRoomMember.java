@@ -1,6 +1,7 @@
 package org.nextme.chat_server.domain.chatRoomMember;
 
 import jakarta.persistence.*;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
@@ -9,6 +10,7 @@ import org.nextme.chat_server.domain.chatMessage.ChatMessageId;
 import org.nextme.chat_server.domain.chatRoom.ChatRoomId;
 import org.nextme.common.jpa.BaseEntity;
 
+import java.util.Objects;
 import java.util.UUID;
 
 @Getter
@@ -42,4 +44,13 @@ public class ChatRoomMember extends BaseEntity {
     @AttributeOverride(name = "chatMessageId", column = @Column(name = "lastReadMessageId"))
     ChatMessageId lastReadMessageId; //마지막 읽은 메세지
 
+    @Builder
+    public ChatRoomMember(ChatRoomMemberId id, ChatRoomId chatRoomId, UUID userId, MemberRole role,  MemberStatus status, ChatMessageId lastReadMessageId) {
+        this.id = Objects.requireNonNullElse(id, ChatRoomMemberId.of());
+        this.chatRoomId = chatRoomId;
+        this.userId = userId;
+        this.role = role;
+        this.status = status;
+        this.lastReadMessageId = lastReadMessageId;
+    }
 }
