@@ -30,6 +30,7 @@ public class StompAuthChannelInterceptor implements ChannelInterceptor {
         // STOMP 명령이 CONNECT 인지 확인
         if(StompCommand.CONNECT.equals(accessor.getCommand())) {
 
+
             //Authorization 헤더를 가져옴
             String token = accessor.getNativeHeader("Authorization").get(0);
 
@@ -38,7 +39,10 @@ public class StompAuthChannelInterceptor implements ChannelInterceptor {
             }
 
             token = token.substring(7);
-            UUID userId = jwtProvider.getUserId(token);
+
+            // TODO : JWT토큰 구현되면 해금
+            //UUID userId = jwtProvider.getUserId(token);
+            UUID userId = UUID.randomUUID();
 
             //세션에 UserId 저장
             accessor.getSessionAttributes().put("userId", userId);
