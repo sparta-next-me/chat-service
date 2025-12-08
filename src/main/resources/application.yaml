@@ -25,9 +25,21 @@ spring:
     redis:
       host: localhost
       port: 6379
+  main:
+    allow-bean-definition-overriding: true
 
 server:
   port: 18080
 
 jwt:
   secret: "jwt 토큰 인증키"
+
+# MyBatis 설정
+mybatis:
+  mapper-locations: classpath:mapper/**/*.xml  # XML 위치
+  type-aliases-package: org.nextme.chat_server.infrastructure.persistence.dto  # DTO 패키지
+  configuration:
+    map-underscore-to-camel-case: true  # snake_case → camelCase 자동 변환
+    log-impl: org.apache.ibatis.logging.slf4j.Slf4jImpl  # 로깅
+    database-id: H2  # 또는 PostgreSQL
+
