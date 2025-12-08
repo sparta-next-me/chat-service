@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="org.nextme.chat_server.infrastructure.mybatis.mapper.ChatRoomQueryMapper">
+
+    <!-- ResultMap 정의 -->
+    <resultMap id="ChatRoomWithLastMessageMap"
+               type="org.nextme.chat_server.infrastructure.mybatis.dto.ChatRoomWithLastMessageDto">
+        <result property="chatRoomId" column="chat_room_id"/>
+        <result property="title" column="title"/>
+        <result property="roomType" column="room_type"/>
+        <result property="lastMessage" column="last_message"/>
+    </resultMap>
+
+    <!-- 특정 타입 방 조회 -->
+    <select id="findRoomsByTypeWithLastMessage"
+            resultMap="ChatRoomWithLastMessageMap">
+        SELECT
+            r.room_id AS chat_room_id,
+            r.title AS title,
+            r.room_type AS room_type,
+            m.content AS last_message
+        FROM p_chat_room r
+                 LEFT JOIN p_chat_message m
+                           ON r.last_message_id = m.id
+        WHERE r.room_type = #{roomType}
+          AND r.deleted_at IS NULL
+        ORDER BY r.update_at DESC
+    </select>
+
+    <!-- 사용자가 속한 방 조회 -->
+    <select id="findUserRoomsWithLastMessage"
+            resultMap="ChatRoomWithLastMessageMap">
+        SELECT
+            r.room_id AS chat_room_id,
+            r.title AS title,
+            r.room_type AS room_type,
+            m.content AS last_message
+        FROM p_chat_room r
+                 INNER JOIN p_chat_room_member mem
+                            ON r.room_id = mem.chat_room_id
+                 LEFT JOIN p_chat_message msg
+                           ON r.last_message_id = msg.id
+        WHERE mem.user_id = #{userId}
+          AND mem.status = 'JOINED'
+          AND r.deleted_at IS NULL
+        ORDER BY r.update_at DESC
+    </select>
+
+</mapper>

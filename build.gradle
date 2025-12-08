@@ -65,11 +65,12 @@ dependencies {
 
     // 웹 소켓
     implementation 'org.springframework.boot:spring-boot-starter-websocket'
-    testImplementation 'org.springframework.boot:spring-boot-starter-websocket-test'
 
     // redis
     implementation 'org.springframework.boot:spring-boot-starter-data-redis'
-    testImplementation 'org.springframework.boot:spring-boot-starter-data-redis-test'
+
+    //mybatis
+    implementation 'org.mybatis.spring.boot:mybatis-spring-boot-starter:4.0.0'
 }
 
 dependencyManagement {
