@@ -32,7 +32,7 @@ public class ChatRoom extends BaseEntity {
 
     @Embedded
     @AttributeOverride(name = "chatMessageId", column= @Column(name = "lastMessageId"))
-    ChatMessageId lastMessageId; // 최근메세지
+    ChatMessageId lastMessageId; // 마지막 메세지
 
     @Builder
     public ChatRoom(ChatRoomId id, String title, RoomType roomType, ChatMessageId lastMessageId) {

@@ -19,6 +19,14 @@ public interface ChatRoomQueryMapper {
     );
 
     /**
+     * 특정 타입의 채팅방, 사용자가 속한 채팅방 목록 조회 (마지막 메시지 포함)
+     */
+    List<ChatRoomWithLastMessageDto> findRoomsByTypeAndUserWithLastMessage(
+            @Param("userId") UUID userId,
+            @Param("roomType") RoomType roomType
+    );
+
+    /**
      * 사용자가 속한 채팅방 목록 조회 (마지막 메시지 포함)
      */
     List<ChatRoomWithLastMessageDto> findUserRoomsWithLastMessage(

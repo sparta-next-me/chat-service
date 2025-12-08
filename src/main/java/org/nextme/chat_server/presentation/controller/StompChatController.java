@@ -51,7 +51,8 @@ public class StompChatController {
             @DestinationVariable String roomId,
             @Payload ChatMessageRequest request,
             SimpMessageHeaderAccessor headerAccessor // STOMP 헤더 + 세션에 접근하는 유틸 객체
-            ) {
+            )
+    {
         try {
             log.info("메세지 수신 -  roomId = {}, request = {}", roomId, request.content());
 
@@ -64,19 +65,18 @@ public class StompChatController {
 
             ChatRoomId chatRoomId = ChatRoomId.of(UUID.fromString(roomId));
 
-            // 메세지 처리
-            ChatMessageResponse response = chatMessageService.sendMessage(
-                    chatRoomId,
-                    senderId,
-                    request);
+            // 메세지 전송
+            ChatMessageResponse response = chatMessageService.sendMessage(chatRoomId, senderId, request);
 
             // 해당 방 구독자들에게 브로드 캐스트
+            // ToDo: chatMessageService에 redis Pub/Sub 해서 구현
             simpMessagingTemplate.convertAndSend(
                     "/topic/chat.room." + chatRoomId.getChatRoomId(),
                     response
             );
 
             log.info("메세지 브로드캐스트 완료 - {}", response.messageId());
+
         }catch (Exception e){
             log.info("메세지 전송 실패 - {}", roomId, e);
 
@@ -86,7 +86,6 @@ public class StompChatController {
                     "/queue/errors",
                     Map.of("error", e.getMessage())
             );
-
         }
     }
 }
