@@ -6,6 +6,10 @@ import org.springframework.http.HttpStatus;
 @Getter
 public enum ChatRoomErrorCode {
 
+    CHAT_ROOM_REQUEST_DIRECT(HttpStatus.BAD_REQUEST,"CHAT_ROOM_REQUEST_DIRECT","개인 채팅방 생성 요청이 실패했습니다."),
+    CHAT_ROOM_REQUEST_AI(HttpStatus.BAD_REQUEST,"CHAT_ROOM_REQUEST_AI","AI 채팅방 생성 요청이 실패했습니다."),
+    CHAT_ROOM_REQUEST_GROUP(HttpStatus.BAD_REQUEST,"CHAT_ROOM_REQUEST_GROUP","그룹 채팅방 생성 요청이 실패했습니다."),
+    CHAT_ROOM_CREATE_EMPTY(HttpStatus.BAD_REQUEST,"CHAT_ROOM_CREATE_EMPTY","채팅방 생성 요청이 비었습니다."),
     CHAT_ROOM_REQUEST_EMPTY(HttpStatus.BAD_REQUEST,"CHAT_ROOM_REQUEST_EMPTY","채팅방 요청이 비었습니다."),
     CHAT_ROOM_TYPE_BAD(HttpStatus.BAD_REQUEST,"CHAT_ROOM_TYPE_BAD","잘못된 채팅방 타입입니다.");
 
