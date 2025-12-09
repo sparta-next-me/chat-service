@@ -10,6 +10,7 @@ public record ChatMessageResponse(
         ChatMessageId messageId,
         ChatRoomId roomId,
         UUID senderId,
+        String senderName,
         String content
 ) {
     public static ChatMessageResponse from(ChatMessage message) {
@@ -17,6 +18,7 @@ public record ChatMessageResponse(
                 message.getId(),
                 message.getChatRoomId(),
                 message.getSenderId(),
+                message.getSenderName(),
                 message.getContent()
         );
     }

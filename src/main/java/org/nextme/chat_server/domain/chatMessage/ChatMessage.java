@@ -31,24 +31,29 @@ public class ChatMessage extends BaseEntity {
     @Column(nullable=false)
     UUID senderId; // 전송자 ID
 
+    @Column(nullable=false)
+    String senderName; // 전송자 이름
+
     @Column(nullable=false, length=255)
     String content; // 메세지 내용
 
     @Builder
-    public ChatMessage(ChatMessageId id, ChatRoomId chatRoomId, UUID senderId, String content) {
+    public ChatMessage(ChatMessageId id, ChatRoomId chatRoomId, UUID senderId, String senderName, String content) {
         this.id = Objects.requireNonNullElse(id,ChatMessageId.of());
         this.chatRoomId = chatRoomId;
         this.senderId = senderId;
+        this.senderName = senderName;
         this.content = content;
     }
 
     // 메세지 생성
-    public static ChatMessage create(ChatRoomId chatRoomId, UUID senderId, String content) {
+    public static ChatMessage create(ChatRoomId chatRoomId, UUID senderId, String senderName, String content) {
         validate(content);
 
         return ChatMessage.builder()
                 .chatRoomId(chatRoomId)
                 .senderId(senderId)
+                .senderName(senderName)
                 .content(content)
                 .build();
     }

@@ -56,8 +56,9 @@ public class StompChatController {
         try {
             log.info("메세지 수신 -  roomId = {}, request = {}", roomId, request.content());
 
-            // 세션에서 userId 추출
+            // 세션에서 userId, userName 추출
             UUID senderId = (UUID) headerAccessor.getSessionAttributes().get("userId");
+            String senderName = (String) headerAccessor.getSessionAttributes().get("userName");
 
             if (senderId == null) {
                 throw new RuntimeException("인증되지 않은 사용자입니다.");
@@ -66,7 +67,7 @@ public class StompChatController {
             ChatRoomId chatRoomId = ChatRoomId.of(UUID.fromString(roomId));
 
             // 메세지 전송
-            ChatMessageResponse response = chatMessageService.sendMessage(chatRoomId, senderId, request);
+            ChatMessageResponse response = chatMessageService.sendMessage(chatRoomId, senderId, senderName, request);
 
             // 해당 방 구독자들에게 브로드 캐스트
             // ToDo: chatMessageService에 redis Pub/Sub 해서 구현

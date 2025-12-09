@@ -43,9 +43,11 @@ public class StompAuthChannelInterceptor implements ChannelInterceptor {
             // TODO : JWT토큰 구현되면 해금
             //UUID userId = jwtProvider.getUserId(token);
             UUID userId = UUID.randomUUID();
+            String userName = "jwt 토큰 파싱해 얻은 사용자 이름을 넣거라";
 
             //세션에 UserId 저장
             accessor.getSessionAttributes().put("userId", userId);
+            accessor.getSessionAttributes().put("userName", userName);
         }
         return message;
     }

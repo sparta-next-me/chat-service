@@ -40,8 +40,8 @@ public class ChatMessageService {
 
     private final ChatMessageRepository chatMessageRepository;
 
-    public ChatMessageResponse sendMessage(ChatRoomId roomId, UUID senderId, ChatMessageRequest request) {
-        log.info("메세지 전송 - roomId = {}, senderId = {}, request = {}", roomId, senderId, request);
+    public ChatMessageResponse sendMessage(ChatRoomId roomId, UUID senderId, String senderName, ChatMessageRequest request) {
+        log.info("메세지 전송 - roomId = {}, senderId = {}, senderName = {}, request = {}", roomId, senderId, senderName ,request);
 
         //TODO: 사용자 값 검증 캐싱해서 확인
 
@@ -49,6 +49,7 @@ public class ChatMessageService {
         ChatMessage message = ChatMessage.create(
                 roomId,
                 senderId,
+                senderName,
                 request.content()
         );
 

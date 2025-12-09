@@ -32,6 +32,9 @@ public class ChatRoomMember extends BaseEntity {
     @Column(nullable=false)
     UUID userId; // 사용자 ID
 
+    @Column(nullable=false)
+    String userName; //사용자 이름
+
     @Enumerated(EnumType.STRING)
     @Column(nullable=false)
     MemberRole role; // 역할
@@ -45,21 +48,23 @@ public class ChatRoomMember extends BaseEntity {
     ChatMessageId lastReadMessageId; //마지막 읽은 메세지
 
     @Builder
-    public ChatRoomMember(ChatRoomMemberId id, ChatRoomId chatRoomId, UUID userId, MemberRole role,  MemberStatus status, ChatMessageId lastReadMessageId) {
+    public ChatRoomMember(ChatRoomMemberId id, ChatRoomId chatRoomId, UUID userId, String userName, MemberRole role,  MemberStatus status, ChatMessageId lastReadMessageId) {
         this.id = Objects.requireNonNullElse(id, ChatRoomMemberId.of());
         this.chatRoomId = chatRoomId;
         this.userId = userId;
+        this.userName = userName;
         this.role = role;
         this.status = status;
         this.lastReadMessageId = lastReadMessageId;
     }
 
     // 채팅방 참여
-    public static ChatRoomMember join(ChatRoomId chatRoomId, UUID userId, MemberRole role) {
+    public static ChatRoomMember join(ChatRoomId chatRoomId, UUID userId, String userName) {
         return ChatRoomMember.builder()
                 .chatRoomId(chatRoomId)
                 .userId(userId)
-                .role(role)
+                .userName(userName)
+                .role(MemberRole.MEMBER)
                 .status(MemberStatus.JOINED)
                 .build();
     }
