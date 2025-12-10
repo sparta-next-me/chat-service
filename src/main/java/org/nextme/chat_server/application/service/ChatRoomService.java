@@ -67,11 +67,15 @@ public class ChatRoomService {
      * @param
      * @return
      */
-    public List<RoomSearchResponse> getChatRoomList(UUID userId, RoomType roomType) {
+    public List<RoomSearchResponse> getChatRoomList(@AuthenticationPrincipal UserPrincipal principal,
+                                                    RoomType roomType) {
 
-        if (userId == null || roomType == null) {
+        if (principal == null || roomType == null) {
             throw new ChatRoomException(ChatRoomErrorCode.CHAT_ROOM_REQUEST_EMPTY);
         }
+
+        //로그인 사용자 매핑
+        UUID userId = UUID.fromString(principal.userId());
 
         // 그룹 채팅방 조회
         if(RoomType.GROUP.equals(roomType)){
@@ -119,16 +123,13 @@ public class ChatRoomService {
      */
     public RoomCreateResponse createChatRoom(@AuthenticationPrincipal UserPrincipal principal, RoomCreateRequest request) {
 
-        if (request == null) {
+        if (request == null || principal == null) {
             throw new ChatRoomException(ChatRoomErrorCode.CHAT_ROOM_CREATE_EMPTY);
         }
 
-        //TODO: JWT 토큰에서 채팅방 생성 유저ID 가져오기
-//        UUID createUser = UUID.randomUUID();
-//        String createUserName = "로그인한 사용자";
-
-        String createUserName = principal.getName();
+        //로그인 사용자 매핑
         UUID createUser = UUID.fromString(principal.userId());
+        String createUserName = principal.getName();
 
         // 그룹 채팅방 생성
         if(RoomType.GROUP.equals(request.roomType())){
@@ -168,8 +169,12 @@ public class ChatRoomService {
             // 1:1 채팅방 생성
         }else if(RoomType.ADVICE.equals(request.roomType()) || RoomType.DIRECT.equals(request.roomType())){
             try{
+                String title = String.format("%s님과 %s님의 대화",
+                        createUserName,
+                        request.invitedUserName());
+
                 //1:1 채팅방 생성
-                ChatRoom newChatRoom = ChatRoom.create(request.roomType(), request.invitedUserName());
+                ChatRoom newChatRoom = ChatRoom.create(request.roomType(), title);
                 roomRepository.save(newChatRoom);
 
                 //채팅방 만든 멤버
@@ -208,6 +213,10 @@ public class ChatRoomService {
      * @param
      * @return
      */
+    public void outChatRoom(@AuthenticationPrincipal UserPrincipal principal, RoomCreateRequest request){
+
+    }
+
 
 
 }

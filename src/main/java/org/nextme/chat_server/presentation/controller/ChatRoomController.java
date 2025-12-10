@@ -41,9 +41,9 @@ public class ChatRoomController {
      * @return
      */
     @GetMapping
-    public ResponseEntity<List<RoomSearchResponse>> searchChatRooms(@RequestParam UUID userId,
+    public ResponseEntity<List<RoomSearchResponse>> searchChatRooms(@AuthenticationPrincipal UserPrincipal principal,
                                                                     @RequestParam RoomType roomType) {
-        return ResponseEntity.ok(chatRoomService.getChatRoomList(userId, roomType));
+        return ResponseEntity.ok(chatRoomService.getChatRoomList(principal, roomType));
     }
 
     /**

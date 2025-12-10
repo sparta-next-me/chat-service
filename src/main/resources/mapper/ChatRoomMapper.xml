@@ -40,8 +40,16 @@
               FROM p_chat_room r
                        LEFT JOIN p_chat_message m
                                  ON r.last_message_id = m.chat_message_id
-              WHERE r.room_type = #{roomType}
-                AND r.deleted_at IS NULL) rm
+              WHERE r.deleted_at IS NULL
+                <choose>
+                    <when test="roomType.name() == 'DIRECT'">
+                        AND r.room_type IN ('DIRECT','ADVICE')
+                    </when>
+                    <otherwise>
+                        AND r.room_type = #{roomType}
+                    </otherwise>
+                </choose>
+              ) rm
                  INNER JOIN p_chat_room_member mem
                             ON rm.chat_room_id = mem.chat_room_id
         WHERE mem.user_id = #{userId}
