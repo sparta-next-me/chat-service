@@ -7,10 +7,6 @@
     <!-- ResultMap 정의 -->
     <resultMap id="ChatRoomWithLastMessageMap"
                type="org.nextme.chat_server.infrastructure.mybatis.dto.ChatRoomWithLastMessageDto">
-        <result property="chatRoomId" column="chat_room_id"/>
-        <result property="title" column="title"/>
-        <result property="roomType" column="room_type"/>
-        <result property="lastMessage" column="last_message"/>
     </resultMap>
 
     <!-- 특정 타입 방 조회 -->
@@ -52,7 +48,6 @@
           AND mem.status = 'JOINED'
         ORDER BY rm.updated_at DESC
     </select>
-
 
     <!-- 사용자가 속한 방 조회 -->
     <select id="findUserRoomsWithLastMessage"

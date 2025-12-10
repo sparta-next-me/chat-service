@@ -21,7 +21,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.nextme.chat_server.application.dto.RoomCreateRequest;
 import org.nextme.chat_server.application.dto.RoomCreateResponse;
-import org.nextme.chat_server.application.dto.RoomSearchRequest;
 import org.nextme.chat_server.application.dto.RoomSearchResponse;
 import org.nextme.chat_server.application.exception.ChatRoomErrorCode;
 import org.nextme.chat_server.application.exception.ChatRoomException;
@@ -30,14 +29,11 @@ import org.nextme.chat_server.domain.chatRoom.ChatRoomRepository;
 import org.nextme.chat_server.domain.chatRoom.RoomType;
 import org.nextme.chat_server.domain.chatRoomMember.ChatRoomMember;
 import org.nextme.chat_server.domain.chatRoomMember.ChatRoomMemberRepository;
-import org.nextme.chat_server.domain.chatRoomMember.MemberRole;
-import org.nextme.chat_server.domain.chatRoomMember.MemberStatus;
 import org.nextme.chat_server.infrastructure.mybatis.dto.ChatRoomWithLastMessageDto;
 import org.nextme.chat_server.infrastructure.mybatis.mapper.ChatRoomQueryMapper;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -188,6 +184,12 @@ public class ChatRoomService {
 
         }
     }
+    
+    /**
+     * 마지막 메세지 업데이트
+     * @param  
+     * @return 
+     */
 
     /**
      * 채팅방 참여

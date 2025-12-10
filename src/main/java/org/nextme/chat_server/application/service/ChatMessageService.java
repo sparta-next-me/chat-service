@@ -23,13 +23,18 @@ import lombok.extern.slf4j.Slf4j;
 import org.nextme.chat_server.application.dto.ChatMessageRequest;
 import org.nextme.chat_server.application.dto.ChatMessageResponse;
 import org.nextme.chat_server.domain.chatMessage.ChatMessage;
+import org.nextme.chat_server.domain.chatMessage.ChatMessageId;
 import org.nextme.chat_server.domain.chatMessage.ChatMessageRepository;
 import org.nextme.chat_server.domain.chatRoom.ChatRoomId;
 import org.nextme.chat_server.domain.chatRoom.ChatRoomRepository;
 import org.nextme.chat_server.domain.chatRoomMember.ChatRoomMemberRepository;
+import org.nextme.chat_server.infrastructure.mybatis.dto.MessageHistoryDto;
+import org.nextme.chat_server.infrastructure.mybatis.mapper.ChatMessageQueryMapper;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
+import java.util.List;
 import java.util.UUID;
 
 @Slf4j
@@ -39,7 +44,29 @@ import java.util.UUID;
 public class ChatMessageService {
 
     private final ChatMessageRepository chatMessageRepository;
+    private final ChatMessageQueryMapper chatMessageMapper;
 
+    /**
+     * DTO → Response 변환
+     * @param
+     * @return
+     */
+    private ChatMessageResponse toChatMessageResponse(MessageHistoryDto dto) {
+        return ChatMessageResponse.builder()
+                .messageId(ChatMessageId.of(dto.getChatMessageId()))
+                .roomId(ChatRoomId.of(dto.getChatRoomId()))
+                .senderId(dto.getSenderId())
+                .senderName(dto.getSenderName())
+                .content(dto.getContent())
+                .createdAt(dto.getCreatedAt())
+                .build();
+    }
+
+    /**
+     * 채팅 메세지 전송
+     * @param
+     * @return
+     */
     public ChatMessageResponse sendMessage(ChatRoomId roomId, UUID senderId, String senderName, ChatMessageRequest request) {
         log.info("메세지 전송 - roomId = {}, senderId = {}, senderName = {}, request = {}", roomId, senderId, senderName ,request);
 
@@ -59,5 +86,19 @@ public class ChatMessageService {
         //TODO: 방 최근 메세지 redis 업데이트
 
         return ChatMessageResponse.from(saveMsg);
+    }
+
+    /**
+     * 채팅방 메세지 히스토리 조회
+     * @param
+     * @return
+     */
+    public List<ChatMessageResponse> getChatMessageHistory(UUID chatRoomId, UUID beforeMessageId, LocalDateTime beforeCreatedAt, int size){
+
+        List<MessageHistoryDto> dto = chatMessageMapper.findMessageHistory(chatRoomId, beforeMessageId,beforeCreatedAt,size);
+
+        return dto.stream()
+                .map(this::toChatMessageResponse)
+                .toList();
     }
 }

@@ -1,5 +1,6 @@
 package org.nextme.chat_server.infrastructure.mybatis.mapper;
 
+import lombok.extern.slf4j.Slf4j;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 import org.nextme.chat_server.domain.chatRoom.RoomType;
