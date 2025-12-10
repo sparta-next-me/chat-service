@@ -6,7 +6,9 @@ import org.nextme.chat_server.application.dto.*;
 import org.nextme.chat_server.application.service.ChatMessageService;
 import org.nextme.chat_server.application.service.ChatRoomService;
 import org.nextme.chat_server.domain.chatRoom.RoomType;
+import org.nextme.common.security.UserPrincipal;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
@@ -29,8 +31,8 @@ public class ChatRoomController {
      * @return
      */
     @PostMapping
-    public ResponseEntity<RoomCreateResponse> createChatRoom(@RequestBody RoomCreateRequest request) {
-        return ResponseEntity.ok(chatRoomService.createChatRoom(request));
+    public ResponseEntity<RoomCreateResponse> createChatRoom(@AuthenticationPrincipal UserPrincipal principal, @RequestBody RoomCreateRequest request) {
+        return ResponseEntity.ok(chatRoomService.createChatRoom(principal, request));
     }
 
     /**

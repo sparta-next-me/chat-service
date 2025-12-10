@@ -45,7 +45,9 @@ server:
   port: 18080
 
 jwt:
-  secret: "jwt 토큰 인증키"
+  secret: ${JWT_SECRET}
+  access-token-validity-seconds: 1800
+  refresh-token-validity-seconds: 1209600
 
 # MyBatis 설정
 mybatis:

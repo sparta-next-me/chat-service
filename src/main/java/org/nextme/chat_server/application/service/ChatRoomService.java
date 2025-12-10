@@ -31,6 +31,9 @@ import org.nextme.chat_server.domain.chatRoomMember.ChatRoomMember;
 import org.nextme.chat_server.domain.chatRoomMember.ChatRoomMemberRepository;
 import org.nextme.chat_server.infrastructure.mybatis.dto.ChatRoomWithLastMessageDto;
 import org.nextme.chat_server.infrastructure.mybatis.mapper.ChatRoomQueryMapper;
+import org.nextme.common.security.UserPrincipal;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -114,15 +117,18 @@ public class ChatRoomService {
      * @param
      * @return
      */
-    public RoomCreateResponse createChatRoom(RoomCreateRequest request) {
+    public RoomCreateResponse createChatRoom(@AuthenticationPrincipal UserPrincipal principal, RoomCreateRequest request) {
 
         if (request == null) {
             throw new ChatRoomException(ChatRoomErrorCode.CHAT_ROOM_CREATE_EMPTY);
         }
 
         //TODO: JWT 토큰에서 채팅방 생성 유저ID 가져오기
-        UUID createUser = UUID.randomUUID();
-        String createUserName = "로그인한 사용자";
+//        UUID createUser = UUID.randomUUID();
+//        String createUserName = "로그인한 사용자";
+
+        String createUserName = principal.getName();
+        UUID createUser = UUID.fromString(principal.userId());
 
         // 그룹 채팅방 생성
         if(RoomType.GROUP.equals(request.roomType())){
