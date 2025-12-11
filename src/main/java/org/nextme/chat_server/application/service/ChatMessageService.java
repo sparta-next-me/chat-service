@@ -50,7 +50,7 @@ public class ChatMessageService {
     private final ChatMessageRepository chatMessageRepository;
     private final ChatMessageQueryMapper chatMessageMapper;
     private final SimpMessagingTemplate simpMessagingTemplate;
-    MessageProducer producer;
+    private final MessageProducer producer;
 
     /**
      * DTO → Response 변환
