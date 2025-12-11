@@ -27,14 +27,17 @@ import org.nextme.chat_server.domain.chatMessage.ChatMessageId;
 import org.nextme.chat_server.domain.chatMessage.ChatMessageRepository;
 import org.nextme.chat_server.domain.chatRoom.ChatRoomId;
 import org.nextme.chat_server.domain.chatRoom.ChatRoomRepository;
+import org.nextme.chat_server.domain.chatRoom.RoomType;
 import org.nextme.chat_server.domain.chatRoomMember.ChatRoomMemberRepository;
 import org.nextme.chat_server.infrastructure.mybatis.dto.MessageHistoryDto;
 import org.nextme.chat_server.infrastructure.mybatis.mapper.ChatMessageQueryMapper;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 @Slf4j
@@ -45,6 +48,7 @@ public class ChatMessageService {
 
     private final ChatMessageRepository chatMessageRepository;
     private final ChatMessageQueryMapper chatMessageMapper;
+    private final SimpMessagingTemplate simpMessagingTemplate;
 
     /**
      * DTO → Response 변환
@@ -67,8 +71,9 @@ public class ChatMessageService {
      * @param
      * @return
      */
-    public ChatMessageResponse sendMessage(ChatRoomId roomId, UUID senderId, String senderName, ChatMessageRequest request) {
-        log.info("메세지 전송 - roomId = {}, senderId = {}, senderName = {}, request = {}", roomId, senderId, senderName ,request);
+    public Void sendMessage(ChatRoomId roomId, UUID senderId, String senderName, ChatMessageRequest request) {
+        log.info("메세지 전송 - roomId = {}, senderId = {}, senderName = {}, request = {}"
+                , roomId, senderId, senderName ,request);
 
         //TODO: 사용자 값 검증 캐싱해서 확인
 
@@ -81,11 +86,40 @@ public class ChatMessageService {
         );
 
         //메세지 저장
-        ChatMessage saveMsg = chatMessageRepository.save(message);
+        ChatMessageResponse response = ChatMessageResponse
+                .from(chatMessageRepository.save(message));
 
         //TODO: 방 최근 메세지 redis 업데이트
 
-        return ChatMessageResponse.from(saveMsg);
+        // 방 타입이 챗봇일 경우 분기
+        if(request.roomType() != null && RoomType.AI.equals(request.roomType())){
+            System.out.println("챗봇 로직 이벤트 처리");
+        }
+
+        try {
+            // 방 구독자들에게 메세지 브로드 캐스트
+            simpMessagingTemplate.convertAndSend(
+                    "/topic/chat.room." + roomId.getChatRoomId(),
+                    response);
+
+            log.info("메세지 브로드캐스트 완료 - {}", response.messageId());
+
+        }catch (Exception e){
+
+            log.info("메세지 전송 실패 - {}", roomId, e);
+
+            // 세션에 userId 가 있는 경우에만 에러 전송
+            if (senderId != null) {
+                // 발신자에게 에러 전송
+                simpMessagingTemplate.convertAndSendToUser(
+                        senderId.toString(),
+                        "/queue/errors",
+                        Map.of("error", e.getMessage())
+                );
+            }
+        }
+
+        return null;
     }
 
     /**
