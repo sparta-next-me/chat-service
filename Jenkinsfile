@@ -83,11 +83,13 @@ pipeline {
                         echo "Stopping existing container..."
                         docker stop ${CONTAINER_NAME} || true
                         docker rm ${CONTAINER_NAME} || true
+                        docker rmi ${FULL_IMAGE} || true
                       fi
 
                       echo "Starting new chat-service container..."
                       docker run -d --name ${CONTAINER_NAME} \\
                         --env-file \${ENV_FILE} \\
+                        -e SPRING_DATA_REDIS_HOST='34.50.7.8' \\
                         -p ${HOST_PORT}:${CONTAINER_PORT} \\
                         ${FULL_IMAGE}
                     """
