@@ -84,7 +84,6 @@ pipeline {
                         docker stop ${CONTAINER_NAME} || true
                         docker rm ${CONTAINER_NAME} || true
                       fi
-                      fi
 
                       echo "Starting new chat-service container..."
                       docker run -d --name ${CONTAINER_NAME} \\
