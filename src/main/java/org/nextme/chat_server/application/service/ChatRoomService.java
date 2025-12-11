@@ -24,11 +24,14 @@ import org.nextme.chat_server.application.dto.RoomCreateResponse;
 import org.nextme.chat_server.application.dto.RoomSearchResponse;
 import org.nextme.chat_server.application.exception.ChatRoomErrorCode;
 import org.nextme.chat_server.application.exception.ChatRoomException;
+import org.nextme.chat_server.domain.chatMessage.ChatMessageRepository;
 import org.nextme.chat_server.domain.chatRoom.ChatRoom;
+import org.nextme.chat_server.domain.chatRoom.ChatRoomId;
 import org.nextme.chat_server.domain.chatRoom.ChatRoomRepository;
 import org.nextme.chat_server.domain.chatRoom.RoomType;
 import org.nextme.chat_server.domain.chatRoomMember.ChatRoomMember;
 import org.nextme.chat_server.domain.chatRoomMember.ChatRoomMemberRepository;
+import org.nextme.chat_server.domain.chatRoomMember.MemberStatus;
 import org.nextme.chat_server.infrastructure.mybatis.dto.ChatRoomWithLastMessageDto;
 import org.nextme.chat_server.infrastructure.mybatis.mapper.ChatRoomQueryMapper;
 import org.nextme.common.security.UserPrincipal;
@@ -38,6 +41,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 @Slf4j
@@ -48,6 +52,7 @@ public class ChatRoomService {
 
     private final ChatRoomRepository roomRepository;
     private final ChatRoomMemberRepository roomMemberRepository;
+    private final ChatMessageRepository messageRepository;
     private final ChatRoomQueryMapper chatRoomMapper;
 
     /**
@@ -195,28 +200,85 @@ public class ChatRoomService {
 
         }
     }
-    
-    /**
-     * 마지막 메세지 업데이트
-     * @param  
-     * @return 
-     */
 
     /**
      * 채팅방 참여
      * @param
      * @return
      */
+    public void joinChatRoom(@AuthenticationPrincipal UserPrincipal principal, ChatRoomId chatRoomId) {
+        if (principal == null) {
+            throw new ChatRoomException(ChatRoomErrorCode.CHAT_ROOM_JOIN_BAD);
+        }
 
-    /**
-     * 채팅방 나가기
-     * @param
-     * @return
-     */
-    public void outChatRoom(@AuthenticationPrincipal UserPrincipal principal, RoomCreateRequest request){
+        //채팅 멤버 조회
+        Optional<ChatRoomMember> member = roomMemberRepository
+                .findByChatRoomIdAndUserId(chatRoomId, UUID.fromString(principal.userId()));
+
+        // 멤버 값 체크
+        if(member.isPresent()){
+            //값이 있으면
+            ChatRoomMember roomMember = member.get();
+
+            // 상태가 LEFT 면
+            if(MemberStatus.LEFT.equals(roomMember.getStatus())){
+                roomMember.join();
+                roomMemberRepository.save(roomMember);
+            }
+        }else{
+            //값이 없으면
+            ChatRoomMember roomJoinMember = ChatRoomMember
+                    .join(chatRoomId, UUID.fromString(principal.userId()), principal.name());
+            roomMemberRepository.save(roomJoinMember);
+        }
+
 
     }
 
+    /**
+     * 채팅방 나가기
+     *
+     * @param
+     * @return
+     */
+    public void leaveChatRoom(@AuthenticationPrincipal UserPrincipal principal, ChatRoomId chatRoomId){
+        if (principal == null) {
+            throw new ChatRoomException(ChatRoomErrorCode.CHAT_ROOM_LEAVE_BAD);
+        }
+
+        ChatRoomMember member = roomMemberRepository
+                .findByChatRoomIdAndUserId(chatRoomId, UUID.fromString(principal.userId()))
+                .orElseThrow(() -> new ChatRoomException(ChatRoomErrorCode.CHAT_ROOM_LEAVE_BAD, "해당 멤버가 해당 채팅방 소속이 아닙니다."));
+
+        member.leave();
+        roomMemberRepository.save(member);
+
+        // 해당 채팅방에 참여중인 멤버 조회
+        List<ChatRoomMember> members = roomMemberRepository
+                .findByChatRoomIdAndStatus(chatRoomId, MemberStatus.JOINED);
+
+        // 방을 나갔을 때 해당 방 멤버가 아무도 없으면
+        if(members.isEmpty()){
+            ChatRoom leaveRoom = roomRepository
+                    .findById(chatRoomId)
+                    .orElseThrow(() -> new ChatRoomException( ChatRoomErrorCode.CHAT_ROOM_NOT_FOUND));
+
+            // 방 소프트 딜리트
+            leaveRoom.markAsDeleted("system");
+            roomRepository.save(leaveRoom);
+
+            //해당 방의 메세지 전부 삭제
+            messageRepository.deleteByChatRoomId(chatRoomId);
+
+            //해당 방의 멤버 전부 삭제
+            roomMemberRepository.deleteByChatRoomId(chatRoomId);
+        }
+    }
 
 
+    /**
+     * 마지막 메세지 업데이트
+     * @param
+     * @return
+     */
 }

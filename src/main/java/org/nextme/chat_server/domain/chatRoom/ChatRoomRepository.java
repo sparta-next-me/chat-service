@@ -11,4 +11,5 @@ import java.util.List;
 public interface ChatRoomRepository extends JpaRepository<ChatRoom, ChatRoomId> {
     List<ChatRoom> findAllByRoomType(RoomType roomType);
 
+
 }

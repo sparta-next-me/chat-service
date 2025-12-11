@@ -74,6 +74,11 @@ public class ChatRoomMember extends BaseEntity {
         this.status = MemberStatus.LEFT;
     }
 
+    // 채팅방 입장
+    public void join(){
+        this.status = MemberStatus.JOINED;
+    }
+
     // 읽음 처리
     public void updateLastReadMessage(ChatMessageId messageId) {
         this.lastReadMessageId = messageId;

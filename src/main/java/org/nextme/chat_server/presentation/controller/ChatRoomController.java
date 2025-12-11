@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.nextme.chat_server.application.dto.*;
 import org.nextme.chat_server.application.service.ChatMessageService;
 import org.nextme.chat_server.application.service.ChatRoomService;
+import org.nextme.chat_server.domain.chatRoom.ChatRoomId;
 import org.nextme.chat_server.domain.chatRoom.RoomType;
 import org.nextme.common.security.UserPrincipal;
 import org.springframework.http.ResponseEntity;
@@ -66,6 +67,24 @@ public class ChatRoomController {
      * @param
      * @return
      */
+    @PostMapping("/{chatRoomId}/join")
+    public ResponseEntity<Void> inChatRoom(@AuthenticationPrincipal UserPrincipal principal,
+                                           @PathVariable UUID chatRoomId){
+        chatRoomService.joinChatRoom(principal, ChatRoomId.of(chatRoomId));
+        return ResponseEntity.ok().build();
+    }
+
+    /**
+     * 채팅방 퇴장
+     * @param
+     * @return
+     */
+    @PostMapping("/{chatRoomId}/leave")
+    public ResponseEntity<Void> leaveChatRoom(@AuthenticationPrincipal UserPrincipal principal,
+                                              @PathVariable UUID chatRoomId){
+        chatRoomService.leaveChatRoom(principal, ChatRoomId.of(chatRoomId));
+        return ResponseEntity.ok().build();
+    }
 
     /**
      * 채팅방 삭제
