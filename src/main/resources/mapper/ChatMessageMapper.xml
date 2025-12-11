@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="org.nextme.chat_server.infrastructure.mybatis.mapper.ChatMessageQueryMapper">
+
+    <!-- ResultMap 정의 -->
+    <resultMap id="ChatMessageMap"
+               type="org.nextme.chat_server.infrastructure.mybatis.dto.MessageHistoryDto">
+        <result property="chatRoomId" column="chat_room_id"/>
+    </resultMap>
+
+    <select id="findMessageHistory"
+            resultMap="ChatMessageMap">
+        SELECT
+            cm.chat_message_id,
+            cm.chat_room_id,
+            cm.sender_id,
+            cm.sender_name,
+            cm.content,
+            cm.created_at
+        FROM p_chat_message cm
+        WHERE chat_room_id = #{chatRoomId}
+          AND cm.deleted_at IS NULL
+        <if test="beforeCreatedAt !=null and beforeMessageId != null">
+            AND (
+                cm.created_at <![CDATA[<]]> #{beforeCreatedAt}
+                OR (
+                    cm.created_at = #{beforeCreatedAt}
+                    AND cm.chat_message_id <![CDATA[<]]> #{beforeMessageId}
+                )
+            )
+        </if>
+        ORDER BY created_at DESC, chat_message_id DESC
+        LIMIT #{size}
+    </select>
+
+
+</mapper>
