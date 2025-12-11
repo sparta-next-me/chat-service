@@ -95,6 +95,12 @@ public class ChatMessageService {
      */
     public List<ChatMessageResponse> getChatMessageHistory(UUID chatRoomId, UUID beforeMessageId, LocalDateTime beforeCreatedAt, int size){
 
+        // size 검증
+        if (size < 1 || size > 100) {
+            throw new IllegalArgumentException("size는 1부터 100 사이의 값이어야 합니다.");
+        }
+        //todo: 채팅방 멤버 검증로직 추가
+
         List<MessageHistoryDto> dto = chatMessageMapper.findMessageHistory(chatRoomId, beforeMessageId,beforeCreatedAt,size);
 
         return dto.stream()

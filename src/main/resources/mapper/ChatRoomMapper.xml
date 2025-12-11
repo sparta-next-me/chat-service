@@ -56,24 +56,4 @@
           AND mem.status = 'JOINED'
         ORDER BY rm.updated_at DESC
     </select>
-
-    <!-- 사용자가 속한 방 조회 -->
-    <select id="findUserRoomsWithLastMessage"
-            resultMap="ChatRoomWithLastMessageMap">
-        SELECT
-            r.chat_room_id AS chat_room_id,
-            r.title AS title,
-            r.room_type AS room_type,
-            m.content AS last_message
-        FROM p_chat_room r
-                 INNER JOIN p_chat_room_member mem
-                            ON r.chat_room_id = mem.chat_room_id
-                 LEFT JOIN p_chat_message msg
-                           ON r.last_message_id = msg.chat_message_id
-        WHERE mem.user_id = #{userId}
-          AND mem.status = 'JOINED'
-          AND r.updated_at IS NULL
-        ORDER BY r.update_at DESC
-    </select>
-
 </mapper>

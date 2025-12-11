@@ -10,6 +10,7 @@ import org.springframework.messaging.simp.stomp.StompHeaderAccessor;
 import org.springframework.messaging.support.ChannelInterceptor;
 import org.springframework.stereotype.Component;
 
+import java.util.Map;
 import java.util.UUID;
 
 /**
@@ -44,9 +45,16 @@ public class StompAuthChannelInterceptor implements ChannelInterceptor {
             UUID userId = jwtProvider.getUserId(token);
             String userName = jwtProvider.getUserName(token);
 
+            //세션 객체 생성
+            Map<String, Object> sessionAttributes = accessor.getSessionAttributes();
+
+            if (sessionAttributes == null) {
+                throw new RuntimeException("세션 속성을 가져올 수 없습니다.");
+            }
+
             //세션에 저장
-            accessor.getSessionAttributes().put("userId", userId);
-            accessor.getSessionAttributes().put("userName", userName);
+            sessionAttributes.put("userId", userId);
+            sessionAttributes.put("userName", userName);
         }
         return message;
     }

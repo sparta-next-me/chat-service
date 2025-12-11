@@ -164,7 +164,7 @@ public class ChatRoomService {
                 ChatRoomMember chatRoomMember = ChatRoomMember.join(newChatRoom.getId(), createUser, createUserName);
                 roomMemberRepository.save(chatRoomMember);
 
-                // TODO : 채팅 봇 생성?
+                // TODO : 채팅 봇 생성
 
                 return RoomCreateResponse.from(newChatRoom);
 
@@ -173,6 +173,11 @@ public class ChatRoomService {
             }
             // 1:1 채팅방 생성
         }else if(RoomType.ADVICE.equals(request.roomType()) || RoomType.DIRECT.equals(request.roomType())){
+
+            if (request.inviteUserId() == null || request.invitedUserName() == null || request.invitedUserName().isBlank()) {
+                throw new ChatRoomException(ChatRoomErrorCode.CHAT_ROOM_CREATE_EMPTY, "1:1 채팅방 생성 시 초대할 사용자 정보가 필요합니다");
+            }
+
             try{
                 String title = String.format("%s님과 %s님의 대화",
                         createUserName,

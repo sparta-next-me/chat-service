@@ -9,7 +9,7 @@ import java.util.UUID;
 
 @Getter
 @Setter
-@ToString
+@ToString(exclude = "content")
 public class MessageHistoryDto {
     private UUID chatMessageId;
     private UUID chatRoomId;

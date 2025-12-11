@@ -16,21 +16,24 @@ public class MemberRoleHandler extends BaseTypeHandler<MemberRole> {
 
     @Override
     public void setNonNullParameter(PreparedStatement ps, int i, MemberRole parameter, JdbcType jdbcType) throws SQLException {
-
+        ps.setString(i, parameter.name());
     }
 
     @Override
     public MemberRole getNullableResult(ResultSet rs, String columnName) throws SQLException {
-        return null;
+        String value = rs.getString(columnName);
+        return value == null ? null : MemberRole.valueOf(value);
     }
 
     @Override
     public MemberRole getNullableResult(ResultSet rs, int columnIndex) throws SQLException {
-        return null;
+        String value = rs.getString(columnIndex);
+        return value == null ? null : MemberRole.valueOf(value);
     }
 
     @Override
     public MemberRole getNullableResult(CallableStatement cs, int columnIndex) throws SQLException {
-        return null;
+        String value = cs.getString(columnIndex);
+        return value == null ? null : MemberRole.valueOf(value);
     }
 }

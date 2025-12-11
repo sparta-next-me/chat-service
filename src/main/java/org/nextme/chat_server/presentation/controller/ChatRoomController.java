@@ -58,6 +58,7 @@ public class ChatRoomController {
                                                                        @RequestParam(required = false) LocalDateTime beforeCreatedAt,
                                                                        @RequestParam(defaultValue = "20") int size) {
 
+        //TODO: 사용자 인증 및 값 검증 추가 @AuthenticationPrincipal 사용
         return ResponseEntity.ok(chatMessageService.getChatMessageHistory(chatRoomId, beforeMessageId, beforeCreatedAt ,size));
     }
 

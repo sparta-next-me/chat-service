@@ -53,11 +53,12 @@ public class StompChatController {
             SimpMessageHeaderAccessor headerAccessor // STOMP 헤더 + 세션에 접근하는 유틸 객체
             )
     {
+        UUID senderId = null;
         try {
             log.info("메세지 수신 -  roomId = {}, request = {}", roomId, request.content());
 
             // 세션에서 userId, userName 추출
-            UUID senderId = (UUID) headerAccessor.getSessionAttributes().get("userId");
+            senderId = (UUID) headerAccessor.getSessionAttributes().get("userId");
             String senderName = (String) headerAccessor.getSessionAttributes().get("userName");
 
             if (senderId == null) {
@@ -78,15 +79,18 @@ public class StompChatController {
 
             log.info("메세지 브로드캐스트 완료 - {}", response.messageId());
 
-        }catch (Exception e){
+        }catch (Exception e) {
             log.info("메세지 전송 실패 - {}", roomId, e);
 
-            // 발신자에게 에러 전송
-            simpMessagingTemplate.convertAndSendToUser(
-                    headerAccessor.getSessionAttributes().get("userId").toString(),
-                    "/queue/errors",
-                    Map.of("error", e.getMessage())
-            );
+            // 세션에 userId 가 있는 경우에만 에러 전송
+            if (senderId != null) {
+                // 발신자에게 에러 전송
+                simpMessagingTemplate.convertAndSendToUser(
+                        headerAccessor.getSessionAttributes().get("userId").toString(),
+                        "/queue/errors",
+                        Map.of("error", e.getMessage())
+                );
+            }
         }
     }
 }

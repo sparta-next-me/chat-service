@@ -3,6 +3,7 @@ package org.nextme.chat_server.infrastructure.mybatis.typehandler;
 import org.apache.ibatis.type.BaseTypeHandler;
 import org.apache.ibatis.type.JdbcType;
 import org.apache.ibatis.type.MappedTypes;
+import org.nextme.chat_server.domain.chatRoom.RoomType;
 import org.nextme.chat_server.domain.chatRoomMember.MemberStatus;
 
 import java.sql.CallableStatement;
@@ -15,21 +16,24 @@ public class MemberStatusHandler extends BaseTypeHandler<MemberStatus> {
 
     @Override
     public void setNonNullParameter(PreparedStatement ps, int i, MemberStatus parameter, JdbcType jdbcType) throws SQLException {
-
+        ps.setString(i, parameter.name());
     }
 
     @Override
     public MemberStatus getNullableResult(ResultSet rs, String columnName) throws SQLException {
-        return null;
+        String value = rs.getString(columnName);
+        return value == null ? null : MemberStatus.valueOf(value);
     }
 
     @Override
     public MemberStatus getNullableResult(ResultSet rs, int columnIndex) throws SQLException {
-        return null;
+        String value = rs.getString(columnIndex);
+        return value == null ? null : MemberStatus.valueOf(value);
     }
 
     @Override
     public MemberStatus getNullableResult(CallableStatement cs, int columnIndex) throws SQLException {
-        return null;
+        String value = cs.getString(columnIndex);
+        return value == null ? null : MemberStatus.valueOf(value);
     }
 }
