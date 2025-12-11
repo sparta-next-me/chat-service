@@ -5,6 +5,7 @@ import org.nextme.common.jwt.JwtTokenProvider;
 import org.nextme.common.jwt.TokenBlacklistService;
 import org.nextme.common.security.DirectJwtAuthenticationFilter;
 import org.nextme.common.security.GatewayUserHeaderAuthenticationFilter;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
@@ -27,6 +28,7 @@ import java.util.List;
 @EnableWebSecurity
 @RequiredArgsConstructor
 @EnableMethodSecurity(prePostEnabled = true)
+@EnableConfigurationProperties(JwtProperties.class)
 public class SecurityConfig {
 
     @Bean
