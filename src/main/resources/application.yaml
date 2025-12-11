@@ -21,10 +21,10 @@ spring:
         format_sql: true
     hibernate:
       ddl-auto: none
-  data:
-    redis:
-      host: 34.50.7.8
-      port: 6379
+#  data:
+#    redis:
+#      host: 34.50.7.8
+#      port: 6379
   main:
     allow-bean-definition-overriding: true
   flyway:
