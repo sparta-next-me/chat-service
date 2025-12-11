@@ -56,7 +56,6 @@ dependencies {
     // 메시징 & 실시간 통신
     implementation 'org.springframework.boot:spring-boot-starter-websocket'  // WebSocket (채팅)
     implementation 'org.springframework.kafka:spring-kafka'                  // Kafka (이벤트 스트리밍)
-    implementation 'org.apache.kafka:kafka-streams'                          // Kafka Streams
     //implementation 'org.springframework.boot:spring-boot-starter-amqp'     // RabbitMQ (사용 안 함)
     //implementation 'org.springframework.amqp:spring-rabbit-stream'         // RabbitMQ Streams (사용 안 함)
 

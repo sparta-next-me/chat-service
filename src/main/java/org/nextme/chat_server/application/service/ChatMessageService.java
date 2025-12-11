@@ -31,6 +31,7 @@ import org.nextme.chat_server.domain.chatRoom.RoomType;
 import org.nextme.chat_server.domain.chatRoomMember.ChatRoomMemberRepository;
 import org.nextme.chat_server.infrastructure.mybatis.dto.MessageHistoryDto;
 import org.nextme.chat_server.infrastructure.mybatis.mapper.ChatMessageQueryMapper;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -49,6 +50,7 @@ public class ChatMessageService {
     private final ChatMessageRepository chatMessageRepository;
     private final ChatMessageQueryMapper chatMessageMapper;
     private final SimpMessagingTemplate simpMessagingTemplate;
+    MessageProducer producer;
 
     /**
      * DTO → Response 변환
@@ -93,7 +95,9 @@ public class ChatMessageService {
 
         // 방 타입이 챗봇일 경우 분기
         if(request.roomType() != null && RoomType.AI.equals(request.roomType())){
+            producer.send(senderId);
             System.out.println("챗봇 로직 이벤트 처리");
+            System.out.println("챗봇 비동기 메세지 전송");
         }
 
         try {
