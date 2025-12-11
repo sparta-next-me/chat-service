@@ -1,6 +1,7 @@
 package org.nextme.chat_server.domain.chatRoom;
 
 import jakarta.persistence.*;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
@@ -8,6 +9,7 @@ import org.hibernate.annotations.SQLRestriction;
 import org.nextme.chat_server.domain.chatMessage.ChatMessageId;
 import org.nextme.common.jpa.BaseEntity;
 
+import java.util.Objects;
 import java.util.UUID;
 
 @Getter
@@ -30,6 +32,26 @@ public class ChatRoom extends BaseEntity {
 
     @Embedded
     @AttributeOverride(name = "chatMessageId", column= @Column(name = "lastMessageId"))
-    ChatMessageId lastMessageId; // 최근메세지
+    ChatMessageId lastMessageId; // 마지막 메세지
 
+    @Builder
+    public ChatRoom(ChatRoomId id, String title, RoomType roomType, ChatMessageId lastMessageId) {
+        this.id = Objects.requireNonNullElse(id, ChatRoomId.of());
+        this.title = title;
+        this.roomType = roomType;
+        this.lastMessageId = lastMessageId;
+    }
+
+    // 채팅방 생성
+    public static ChatRoom create(RoomType roomType, String title) {
+        return ChatRoom.builder()
+                .roomType(roomType)
+                .title(title)
+                .build();
+    }
+
+    // 최근 메세지 업데이트
+    public void updateLastMessage(ChatMessageId lastMessageId) {
+        this.lastMessageId = lastMessageId;
+    }
 }

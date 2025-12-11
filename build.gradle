@@ -31,33 +31,57 @@ ext {
 
 dependencies {
 
-    implementation 'com.github.sparta-next-me:msa-common:v0.0.2'
+    // 공통 모듈
+    implementation 'com.github.sparta-next-me:msa-common:v0.1.1'  // MSA 공통 라이브러리
 
-	implementation 'org.springframework.boot:spring-boot-starter-actuator'
-	//implementation 'org.springframework.boot:spring-boot-starter-amqp'
-	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
-	implementation 'org.springframework.boot:spring-boot-starter-security'
-	implementation 'org.springframework.boot:spring-boot-starter-web'
-	implementation 'io.micrometer:micrometer-tracing-bridge-brave'
-	implementation 'io.zipkin.reporter2:zipkin-reporter-brave'
-	implementation 'org.apache.kafka:kafka-streams'
-	//implementation 'org.springframework.amqp:spring-rabbit-stream'
-	implementation 'org.springframework.cloud:spring-cloud-starter-config'
-	implementation 'org.springframework.cloud:spring-cloud-starter-loadbalancer'
-	//implementation 'org.springframework.cloud:spring-cloud-starter-netflix-eureka-client'
-	implementation 'org.springframework.cloud:spring-cloud-starter-openfeign'
-	implementation 'org.springframework.kafka:spring-kafka'
-	compileOnly 'org.projectlombok:lombok'
-	developmentOnly 'org.springframework.boot:spring-boot-devtools'
-	runtimeOnly 'com.h2database:h2'
-	runtimeOnly 'io.micrometer:micrometer-registry-prometheus'
-	runtimeOnly 'org.postgresql:postgresql'
-	annotationProcessor 'org.projectlombok:lombok'
-	testImplementation 'org.springframework.boot:spring-boot-starter-test'
-	//testImplementation 'org.springframework.amqp:spring-rabbit-test'
-	testImplementation 'org.springframework.kafka:spring-kafka-test'
-	testImplementation 'org.springframework.security:spring-security-test'
-	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+    // Spring Boot 기본
+    implementation 'org.springframework.boot:spring-boot-starter-actuator'  // 헬스체크, 메트릭
+    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'  // JPA, Hibernate
+    implementation 'org.springframework.boot:spring-boot-starter-web'        // Spring MVC, REST API
+
+    // 보안 & 인증
+    implementation 'org.springframework.boot:spring-boot-starter-security'  // Spring Security
+    implementation 'io.jsonwebtoken:jjwt-api:0.11.5'                       // JWT API
+    implementation 'io.jsonwebtoken:jjwt-impl:0.11.5'                      // JWT 구현체
+    implementation 'io.jsonwebtoken:jjwt-jackson:0.11.5'                   // JWT JSON 처리
+
+    // 데이터베이스
+    runtimeOnly 'com.h2database:h2'                 // H2 인메모리 DB (테스트용)
+    runtimeOnly 'org.postgresql:postgresql'         // PostgreSQL 드라이버 (운영)
+    implementation 'org.springframework.boot:spring-boot-starter-data-redis'  // Redis
+    implementation 'org.mybatis.spring.boot:mybatis-spring-boot-starter:4.0.0'  // MyBatis
+    implementation 'org.flywaydb:flyway-core'
+    implementation 'org.flywaydb:flyway-database-postgresql'
+
+    // 메시징 & 실시간 통신
+    implementation 'org.springframework.boot:spring-boot-starter-websocket'  // WebSocket (채팅)
+    implementation 'org.springframework.kafka:spring-kafka'                  // Kafka (이벤트 스트리밍)
+    implementation 'org.apache.kafka:kafka-streams'                          // Kafka Streams
+    //implementation 'org.springframework.boot:spring-boot-starter-amqp'     // RabbitMQ (사용 안 함)
+    //implementation 'org.springframework.amqp:spring-rabbit-stream'         // RabbitMQ Streams (사용 안 함)
+
+    // MSA & 클라우드
+    implementation 'org.springframework.cloud:spring-cloud-starter-config'        // Config Server 연동
+    implementation 'org.springframework.cloud:spring-cloud-starter-loadbalancer'  // 로드밸런싱
+    implementation 'org.springframework.cloud:spring-cloud-starter-openfeign'     // Feign Client (서비스 간 통신)
+    //implementation 'org.springframework.cloud:spring-cloud-starter-netflix-eureka-client'  // Eureka (사용 안 함)
+
+    // 모니터링 & 추적
+    implementation 'io.micrometer:micrometer-tracing-bridge-brave'  // 분산 추적 (Zipkin 연동)
+    runtimeOnly 'io.micrometer:micrometer-registry-prometheus'      // Prometheus 메트릭
+    //implementation 'io.zipkin.reporter2:zipkin-reporter-brave'    // Zipkin 리포터 (사용 안 함)
+
+    // 개발 도구
+    compileOnly 'org.projectlombok:lombok'              // Lombok (컴파일 타임)
+    annotationProcessor 'org.projectlombok:lombok'      // Lombok 애노테이션 프로세서
+
+    // 테스트
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'      // Spring Boot 테스트
+    testImplementation 'org.springframework.kafka:spring-kafka-test'            // Kafka 테스트
+    testImplementation 'org.springframework.security:spring-security-test'      // Security 테스트
+    //testImplementation 'org.springframework.amqp:spring-rabbit-test'          // RabbitMQ 테스트 (사용 안 함)
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'                // JUnit 5 런처
+
 }
 
 dependencyManagement {

@@ -1,6 +1,7 @@
 package org.nextme.chat_server.domain.chatMessage;
 
 import jakarta.persistence.*;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
@@ -8,6 +9,7 @@ import org.hibernate.annotations.SQLRestriction;
 import org.nextme.chat_server.domain.chatRoom.ChatRoomId;
 import org.nextme.common.jpa.BaseEntity;
 
+import java.util.Objects;
 import java.util.UUID;
 
 @Getter
@@ -30,5 +32,40 @@ public class ChatMessage extends BaseEntity {
     UUID senderId; // 전송자 ID
 
     @Column(nullable=false)
+    String senderName; // 전송자 이름
+
+    @Column(nullable=false, length=255)
     String content; // 메세지 내용
+
+    @Builder
+    public ChatMessage(ChatMessageId id, ChatRoomId chatRoomId, UUID senderId, String senderName, String content) {
+        this.id = Objects.requireNonNullElse(id,ChatMessageId.of());
+        this.chatRoomId = chatRoomId;
+        this.senderId = senderId;
+        this.senderName = senderName;
+        this.content = content;
+    }
+
+    // 메세지 생성
+    public static ChatMessage create(ChatRoomId chatRoomId, UUID senderId, String senderName, String content) {
+        validate(content);
+
+        return ChatMessage.builder()
+                .chatRoomId(chatRoomId)
+                .senderId(senderId)
+                .senderName(senderName)
+                .content(content)
+                .build();
+    }
+
+    // 메세지 검증
+    private static void validate(String content) {
+        if (content == null || content.isBlank()) {
+            throw new IllegalArgumentException("메세지 내용이 비어있습니다.");
+        }
+        if (content.length() > 255) {
+            throw new IllegalArgumentException("메세지는 255자를 초과할 수 없습니다.");
+        }
+    }
+
 }
