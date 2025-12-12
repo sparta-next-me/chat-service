@@ -1,19 +1,24 @@
 spring:
+
   h2:
     console:
       enabled: true               # H2 웹 콘솔 활성화
       path: /h2-console           # 접속 URL 경로
+
   datasource:
     url: ${DB_URL}      # 인메모리 DB (기본)
     driver-class-name: org.postgresql.Driver
     username: ${DB_USERNAME}
     password: ${DB_PASSWORD}
+
   application:
     name: chat-server
+
   #config server 임시 차단
   cloud:
     config:
       enabled: false
+
   jpa:
     show-sql: true
     properties:
@@ -21,12 +26,15 @@ spring:
         format_sql: true
     hibernate:
       ddl-auto: none
-#  data:
-#    redis:
-#      host: 34.50.7.8
-#      port: 6379
+
+  data:
+    redis:
+      host: 34.50.7.8
+      port: 6379
+
   main:
     allow-bean-definition-overriding: true
+
   flyway:
     enabled: true
     baseline-on-migrate: true
@@ -34,6 +42,47 @@ spring:
     url: ${DB_URL}
     user: ${DB_USERNAME}
     password: ${DB_PASSWORD}
+
+  kafka:
+    bootstrap-servers: 34.22.87.75:9092, 34.22.87.75:9093, 34.22.87.75:9094 # Kafka 브로커(또는 클러스터) 접속 주소와 포트, 쉼표(,)로 복수 브로커 지정 가능
+    consumer:
+      group-id: chat-group # 컨슈머 그룹 ID: 같은 그룹에 속한 컨슈머들은 파티션을 분담하여 처리
+      auto-offset-reset: earliest # 컨슈머가 처음 시작할 때 오프셋이 없으면 어디서부터 읽을지 설정, earliest: 가장 오래된(처음) 메세지부터, latest: 최신 메세지 부터
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer # 메시지 키 역직렬화기(문자열로 디코딩)
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer # 메시지 값 역직렬화기(JSON -> 객체)
+      properties:
+        spring.json.trusted.packages: '*' # JsonDeserializer가 신뢰할 패키지 목록, '*' 모든 패키지를 신뢰(보안상 취약해 지므로 가능한 경우 패키지를 명시)
+        spring.json.add.type.headers: false
+        spring.json.value.default.type: org.nextme.chat_server.infrastructure.kafka.dto.ChatMessage
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer # 메시지 키 직렬화
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer # 메시지 값 직렬화(객체 -> JSON)
+      properties:
+        spring.json.add.type.headers: false
+  # local 개발용 ollama 모델 사용
+#  ai:
+#    model:
+#      chat: ollama
+#    ollama:
+#      base-url: http://localhost:11434
+#      chat:
+#        options:
+#          model: huihui_ai/kanana-nano-abliterated
+#          temperature: 0.5
+  ai:
+    openai:
+      api-key: ${API_KEY}          # LLM용 OpenAI API 키
+      model: gpt-5-nano
+      embedding:
+        api-key: ${API_KEY}        # 임베딩용 OpenAI API 키
+        model: text-embedding-3-small
+
+  rag:
+    embedding-model: text-embedding-3-small
+  init:
+    pull-model-strategy: when_missing
+    timeout: 180s
+    max-retries: 1
 
 logging:
   level:

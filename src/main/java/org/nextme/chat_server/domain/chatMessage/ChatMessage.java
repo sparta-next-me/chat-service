@@ -34,7 +34,7 @@ public class ChatMessage extends BaseEntity {
     @Column(nullable=false)
     String senderName; // 전송자 이름
 
-    @Column(nullable=false, length=255)
+    @Column(nullable=false)
     String content; // 메세지 내용
 
     @Builder
@@ -63,7 +63,8 @@ public class ChatMessage extends BaseEntity {
         if (content == null || content.isBlank()) {
             throw new IllegalArgumentException("메세지 내용이 비어있습니다.");
         }
-        if (content.length() > 255) {
+        if (content.length() > 88255) {
+            System.out.printf("-----------------길이",content.length());
             throw new IllegalArgumentException("메세지는 255자를 초과할 수 없습니다.");
         }
     }
