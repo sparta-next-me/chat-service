@@ -18,7 +18,7 @@ public class ChatBotMessageProducer implements MessageProducer {
     }
 
     @Override
-    public void send(UUID userId) {
-        kafkaTemplate.send("chat.message", "chatBot", new ChatMessage(userId));
+    public void send(UUID roomId, String roomType, String content, String sessionId) {
+        kafkaTemplate.send("chat.message", "chatBot", new ChatMessage(roomId, roomType, content, sessionId));
     }
 }

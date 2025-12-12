@@ -27,6 +27,7 @@ repositories {
 
 ext {
 	set('springCloudVersion', "2025.0.0")
+    set('springAiVersion', "1.1.0")
 }
 
 dependencies {
@@ -70,6 +71,11 @@ dependencies {
     runtimeOnly 'io.micrometer:micrometer-registry-prometheus'      // Prometheus 메트릭
     //implementation 'io.zipkin.reporter2:zipkin-reporter-brave'    // Zipkin 리포터 (사용 안 함)
 
+    //AI
+    //implementation 'org.springframework.ai:spring-ai-starter-model-ollama'
+    implementation 'org.springframework.ai:spring-ai-starter-model-openai'
+
+
     // 개발 도구
     compileOnly 'org.projectlombok:lombok'              // Lombok (컴파일 타임)
     annotationProcessor 'org.projectlombok:lombok'      // Lombok 애노테이션 프로세서
@@ -86,6 +92,7 @@ dependencies {
 dependencyManagement {
 	imports {
 		mavenBom "org.springframework.cloud:spring-cloud-dependencies:${springCloudVersion}"
+        mavenBom "org.springframework.ai:spring-ai-bom:${springAiVersion}"
 	}
 }
 

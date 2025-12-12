@@ -86,10 +86,4 @@ public class ChatRoomController {
         chatRoomService.leaveChatRoom(principal, ChatRoomId.of(chatRoomId));
         return ResponseEntity.ok().build();
     }
-
-    /**
-     * 채팅방 삭제
-     * @param
-     * @return
-     */
 }

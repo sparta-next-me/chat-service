@@ -55,9 +55,10 @@ public class StompChatController {
     {
             log.info("메세지 수신 -  roomId = {}, request = {}", roomId, request.content());
 
-            // 세션에서 userId, userName 추출
+            // 세션에서 userId, userName, 세션 Id 추출
             UUID senderId = (UUID) headerAccessor.getSessionAttributes().get("userId");
             String senderName = (String) headerAccessor.getSessionAttributes().get("userName");
+            String sessionId =  headerAccessor.getSessionId();
 
             if (senderId == null) {
                 throw new RuntimeException("인증되지 않은 사용자입니다.");
@@ -66,6 +67,6 @@ public class StompChatController {
             ChatRoomId chatRoomId = ChatRoomId.of(UUID.fromString(roomId));
 
             // 메세지 전송
-            chatMessageService.sendMessage(chatRoomId, senderId, senderName, request);
+            chatMessageService.sendMessage(chatRoomId, senderId, senderName, sessionId ,request);
     }
 }

@@ -40,6 +40,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 
 @Slf4j
 @Service
@@ -51,6 +52,7 @@ public class ChatMessageService {
     private final ChatMessageQueryMapper chatMessageMapper;
     private final SimpMessagingTemplate simpMessagingTemplate;
     private final MessageProducer producer;
+    private final ChatBotService chatBotService;
 
     /**
      * DTO → Response 변환
@@ -73,9 +75,9 @@ public class ChatMessageService {
      * @param
      * @return
      */
-    public Void sendMessage(ChatRoomId roomId, UUID senderId, String senderName, ChatMessageRequest request) {
-        log.info("메세지 전송 - roomId = {}, senderId = {}, senderName = {}, request = {}"
-                , roomId, senderId, senderName ,request);
+    public Void sendMessage(ChatRoomId roomId, UUID senderId, String senderName, String sessionId ,ChatMessageRequest request) {
+        log.info("메세지 전송 - roomId = {}, senderId = {}, senderName = {}, sessionId = {} ,request = {}"
+                , roomId, senderId, senderName, sessionId, request);
 
         //TODO: 사용자 값 검증 캐싱해서 확인
 
@@ -95,9 +97,13 @@ public class ChatMessageService {
 
         // 방 타입이 챗봇일 경우 분기
         if(request.roomType() != null && RoomType.AI.equals(request.roomType())){
-            producer.send(senderId);
-            System.out.println("챗봇 로직 이벤트 처리");
-            System.out.println("챗봇 비동기 메세지 전송");
+            //producer.send(senderId);
+            log.info("챗봇 메시지 처리 시작");
+
+            // 별도 스레드에서 챗봇 응답 처리
+            CompletableFuture.runAsync(() -> {
+                chatBotService.handleChatBotMessage(roomId, sessionId, request.content());
+            });
         }
 
         try {
@@ -122,7 +128,6 @@ public class ChatMessageService {
                 );
             }
         }
-
         return null;
     }
 

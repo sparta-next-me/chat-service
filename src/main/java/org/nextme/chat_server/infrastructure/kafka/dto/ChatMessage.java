@@ -11,5 +11,8 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 public class ChatMessage implements MessageTpl{
-    private UUID userId;
+    private UUID roomId;
+    private String roomType;
+    private String content;
+    private String sessionId;
 }
