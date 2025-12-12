@@ -1,5 +1,4 @@
 spring:
-
   h2:
     console:
       enabled: true               # H2 웹 콘솔 활성화
@@ -14,10 +13,14 @@ spring:
   application:
     name: chat-server
 
+  config:
+    import: 'optional:configserver:'
+
   #config server 임시 차단
   cloud:
     config:
-      enabled: false
+      enabled: true
+      service-id: config-server
 
   jpa:
     show-sql: true
@@ -83,6 +86,16 @@ spring:
     pull-model-strategy: when_missing
     timeout: 180s
     max-retries: 1
+
+  eureka:
+    instance:
+      prefer-ip-address: true
+
+    client:
+      register-with-eureka: true
+      fetch-registry: true
+      service-url:
+        defaultZone: ${EUREKA_URL}
 
 logging:
   level:
