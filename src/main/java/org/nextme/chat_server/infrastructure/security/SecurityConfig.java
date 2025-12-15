@@ -1,5 +1,6 @@
 package org.nextme.chat_server.infrastructure.security;
 
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.nextme.common.jwt.JwtTokenProvider;
 import org.nextme.common.jwt.TokenBlacklistService;
@@ -67,6 +68,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/health", "/public/**").permitAll()
                         .requestMatchers("/v1/advisor/auth/**").permitAll()
+                        .requestMatchers("/ws/**").permitAll()
                         .requestMatchers("/**").permitAll()
                         .anyRequest().authenticated()
                 )
@@ -85,8 +87,8 @@ public class SecurityConfig {
         CorsConfiguration config = new CorsConfiguration();
 
         // 허용할 Origin(프론트엔드 주소)
-        //config.addAllowedOrigin("*");
         config.addAllowedOriginPattern("*");
+        //config.addAllowedOrigin("localhost:63342");
 
         // 허용할 HTTP 메서드
         config.addAllowedMethod("*"); // GET, POST, OPTIONS 등 모두 허용
@@ -95,7 +97,7 @@ public class SecurityConfig {
         config.addAllowedHeader("*"); // Authorization, Content-Type 등
 
         // 인증정보(Cookie, Authorization) 포함 허용할지 여부
-        config.setAllowCredentials(false);
+        config.setAllowCredentials(true);
 
         // 모든 경로에 이 설정을 적용
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
