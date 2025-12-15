@@ -85,7 +85,7 @@ public class SecurityConfig {
         CorsConfiguration config = new CorsConfiguration();
 
         // 허용할 Origin(프론트엔드 주소)
-        config.addAllowedOrigin("*");
+        config.addAllowedOriginPattern("*");
 
         // 허용할 HTTP 메서드
         config.addAllowedMethod("*"); // GET, POST, OPTIONS 등 모두 허용
@@ -98,7 +98,7 @@ public class SecurityConfig {
 
         // 모든 경로에 이 설정을 적용
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-        source.registerCorsConfiguration("/ws/**", config);
+        source.registerCorsConfiguration("/**", config);
 
         return source;
     }
