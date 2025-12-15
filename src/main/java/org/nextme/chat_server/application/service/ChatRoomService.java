@@ -164,8 +164,6 @@ public class ChatRoomService {
                 ChatRoomMember chatRoomMember = ChatRoomMember.join(newChatRoom.getId(), createUser, createUserName);
                 roomMemberRepository.save(chatRoomMember);
 
-                // TODO : 채팅 봇 생성
-
                 return RoomCreateResponse.from(newChatRoom);
 
             }catch(Exception e){

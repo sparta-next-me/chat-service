@@ -77,8 +77,9 @@ dependencies {
 
 
     // 개발 도구
-    compileOnly 'org.projectlombok:lombok'              // Lombok (컴파일 타임)
-    annotationProcessor 'org.projectlombok:lombok'      // Lombok 애노테이션 프로세서
+    compileOnly 'org.projectlombok:lombok'                                      // Lombok (컴파일 타임)
+    annotationProcessor 'org.projectlombok:lombok'                              // Lombok 애노테이션 프로세서
+    implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.14'   // Swagger
 
     // 테스트
     testImplementation 'org.springframework.boot:spring-boot-starter-test'      // Spring Boot 테스트
