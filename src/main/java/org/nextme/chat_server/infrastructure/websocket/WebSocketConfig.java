@@ -32,7 +32,7 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
         //todo: 실 운영 환경에서는 해당 옵션 제거 setAllowedOriginPatterns("*") (cors 보안정책 회피)
         registry.addEndpoint("/ws/chat")
                 .setAllowedOrigins("*")
-                .setAllowedOriginPatterns("*") // 와일드카드 패턴 허용
+                //.setAllowedOriginPatterns("*") // 와일드카드 패턴 허용
                 .withSockJS();
     }
 
