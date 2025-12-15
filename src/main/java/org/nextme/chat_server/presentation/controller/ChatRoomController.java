@@ -19,7 +19,7 @@ import java.util.UUID;
 @Slf4j
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/chat-rooms")
+@RequestMapping("/v1/chat-rooms")
 public class ChatRoomController {
 
     private final ChatRoomService chatRoomService;
