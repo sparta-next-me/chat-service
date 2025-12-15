@@ -92,7 +92,7 @@ public class ChatRoomController {
      * @param
      * @return
      */
-    @Operation(summary = "채팅방 최장",
+    @Operation(summary = "채팅방 퇴장",
             description = "참여중인 채팅방을 퇴장합니다. 해당 채팅방의 모든 참여 멤버의 상태가 leave 일 경우 채팅방이 삭제처리 됩니다.")
     @PostMapping("/room/{chatRoomId}/leave")
     public ResponseEntity<Void> leaveChatRoom(@AuthenticationPrincipal UserPrincipal principal,
