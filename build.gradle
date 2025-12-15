@@ -64,7 +64,7 @@ dependencies {
     implementation 'org.springframework.cloud:spring-cloud-starter-config'        // Config Server 연동
     implementation 'org.springframework.cloud:spring-cloud-starter-loadbalancer'  // 로드밸런싱
     implementation 'org.springframework.cloud:spring-cloud-starter-openfeign'     // Feign Client (서비스 간 통신)
-    //implementation 'org.springframework.cloud:spring-cloud-starter-netflix-eureka-client'  // Eureka (사용 안 함)
+    implementation 'org.springframework.cloud:spring-cloud-starter-netflix-eureka-client'  // Eureka
 
     // 모니터링 & 추적
     implementation 'io.micrometer:micrometer-tracing-bridge-brave'  // 분산 추적 (Zipkin 연동)
