@@ -90,6 +90,7 @@ pipeline {
                       docker run -d --name ${CONTAINER_NAME} \\
                         --env-file \${ENV_FILE} \\
                         -e SPRING_DATA_REDIS_HOST='34.50.7.8' \\
+                        -e EUREKA_INSTANCE_HOSTNAME='34.50.7.8' \\
                         -p ${HOST_PORT}:${CONTAINER_PORT} \\
                         ${FULL_IMAGE}
                     """
