@@ -28,7 +28,7 @@ spring:
       hibernate:
         format_sql: true
     hibernate:
-      ddl-auto: none
+      ddl-auto: update
 
   data:
     redis:
@@ -88,16 +88,6 @@ spring:
     timeout: 180s
     max-retries: 1
 
-  eureka:
-    instance:
-      prefer-ip-address: true
-
-    client:
-      register-with-eureka: true
-      fetch-registry: true
-      service-url:
-        defaultZone: ${EUREKA_URL}
-
 logging:
   level:
     org.mybatis: DEBUG
@@ -141,3 +131,12 @@ mybatis:
     log-impl: org.apache.ibatis.logging.slf4j.Slf4jImpl  # 로깅
     database-id: PostgreSQL  # 또는 PostgreSQL
 
+eureka:
+  instance:
+    prefer-ip-address: true
+
+  client:
+    register-with-eureka: true
+    fetch-registry: true
+    service-url:
+      defaultZone: ${EUREKA_URL}
