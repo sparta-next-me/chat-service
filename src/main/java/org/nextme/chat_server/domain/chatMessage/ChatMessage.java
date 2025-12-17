@@ -34,7 +34,7 @@ public class ChatMessage extends BaseEntity {
     @Column(nullable=false)
     String senderName; // 전송자 이름
 
-    @Column(nullable=false)
+    @Column(nullable=false, columnDefinition = "TEXT")
     String content; // 메세지 내용
 
     @Builder
