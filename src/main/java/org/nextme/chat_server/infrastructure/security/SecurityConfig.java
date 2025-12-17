@@ -86,7 +86,7 @@ public class SecurityConfig {
         // CORS 설정 객체 생성
         CorsConfiguration config = new CorsConfiguration();
 
-        // 허용할 Origin(프론트엔드 주소)
+        // 허용할 Origin
         config.addAllowedOriginPattern("*");
         //config.addAllowedOrigin("localhost:63342");
 
