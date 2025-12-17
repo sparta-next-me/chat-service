@@ -59,7 +59,7 @@ public class SecurityConfig {
 
         http
                 // CORS 설정 활성화
-                //.cors(cors -> cors.configurationSource(corsConfigurationSource()))
+                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .csrf(csrf -> csrf.disable())
                 .formLogin(form -> form.disable())
                 .headers(headers -> headers.frameOptions(frame -> frame.disable()))
