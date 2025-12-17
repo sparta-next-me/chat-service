@@ -69,7 +69,7 @@ dependencies {
     // 모니터링 & 추적
     implementation 'io.micrometer:micrometer-tracing-bridge-brave'  // 분산 추적 (Zipkin 연동)
     runtimeOnly 'io.micrometer:micrometer-registry-prometheus'      // Prometheus 메트릭
-    //implementation 'io.zipkin.reporter2:zipkin-reporter-brave'    // Zipkin 리포터 (사용 안 함)
+    implementation 'io.zipkin.reporter2:zipkin-reporter-brave'    // Zipkin 리포터 (사용 안 함)
 
     //AI
     //implementation 'org.springframework.ai:spring-ai-starter-model-ollama'

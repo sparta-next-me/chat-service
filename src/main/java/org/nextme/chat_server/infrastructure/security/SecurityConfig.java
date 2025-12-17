@@ -70,6 +70,7 @@ public class SecurityConfig {
                         .requestMatchers("/v1/advisor/auth/**").permitAll()
                         .requestMatchers("/ws/**").permitAll()
                         .requestMatchers("/**").permitAll()
+                        .requestMatchers("/actuator/prometheus", "/actuator/health").permitAll()
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(gatewayUserHeaderAuthenticationFilter,
