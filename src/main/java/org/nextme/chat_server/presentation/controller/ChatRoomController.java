@@ -10,12 +10,15 @@ import org.nextme.chat_server.domain.chatRoom.ChatRoomId;
 import org.nextme.chat_server.domain.chatRoom.RoomType;
 import org.nextme.common.security.UserPrincipal;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
+
+import static org.springframework.security.authorization.AuthorityAuthorizationManager.hasRole;
 
 @Slf4j
 @RestController
@@ -92,6 +95,7 @@ public class ChatRoomController {
      * @param
      * @return
      */
+    @PreAuthorize("hasRole('ADVISOR')")
     @Operation(summary = "채팅방 퇴장",
             description = "참여중인 채팅방을 퇴장합니다. 해당 채팅방의 모든 참여 멤버의 상태가 leave 일 경우 채팅방이 삭제처리 됩니다.")
     @PostMapping("/room/{chatRoomId}/leave")
