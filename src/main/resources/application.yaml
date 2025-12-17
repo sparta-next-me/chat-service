@@ -141,3 +141,18 @@ eureka:
     fetch-registry: true
     service-url:
       defaultZone: ${EUREKA_URL}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus,metrics  # 👈 명시적으로 추가
+  endpoint:
+    prometheus:
+      enabled: true  # 👈 활성화
+    metrics:
+      enabled: true
+  metrics:
+    export:
+      prometheus:
+        enabled: true  # 👈 Prometheus 내보내기 활성화
