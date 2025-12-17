@@ -89,8 +89,8 @@ pipeline {
                       echo "Starting new chat-service container..."
                       docker run -d --name ${CONTAINER_NAME} \\
                         --env-file \${ENV_FILE} \\
-                        -e SPRING_DATA_REDIS_HOST='34.50.7.8' \\
-                        -e EUREKA_INSTANCE_HOSTNAME='34.50.7.8' \\
+                        -e SPRING_DATA_REDIS_HOST='10.178.0.4' \\
+                        -e EUREKA_INSTANCE_HOSTNAME='10.178.0.4' \\
                         -p ${HOST_PORT}:${CONTAINER_PORT} \\
                         ${FULL_IMAGE}
                     """
