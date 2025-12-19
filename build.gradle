@@ -33,7 +33,7 @@ ext {
 dependencies {
 
     // 공통 모듈
-    implementation 'com.github.sparta-next-me:msa-common:v0.1.1'  // MSA 공통 라이브러리
+    implementation 'com.github.sparta-next-me:msa-common:v0.2.0'  // MSA 공통 라이브러리
 
     // Spring Boot 기본
     implementation 'org.springframework.boot:spring-boot-starter-actuator'  // 헬스체크, 메트릭

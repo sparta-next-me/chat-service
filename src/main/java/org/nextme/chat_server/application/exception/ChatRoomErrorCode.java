@@ -6,6 +6,7 @@ import org.springframework.http.HttpStatus;
 @Getter
 public enum ChatRoomErrorCode {
 
+    CHAT_ROOM_ROLE_BAD(HttpStatus.BAD_REQUEST,"CHAT_ROOM_ROLE_BAD","해당 채팅방을 생성할 권한이 없습니다."),
     CHAT_ROOM_NOT_FOUND(HttpStatus.NOT_FOUND,"CHAT_ROOM_NOT_FOUND","채팅방이 없습니다."),
     CHAT_ROOM_JOIN_BAD(HttpStatus.BAD_REQUEST,"CHAT_ROOM_JOIN_BAD","채팅방 입장에 실패했습니다."),
     CHAT_ROOM_LEAVE_BAD(HttpStatus.BAD_REQUEST,"CHAT_ROOM_LEAVE_BAD","채팅방 나가기에 실패했습니다."),

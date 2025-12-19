@@ -32,14 +32,17 @@ import org.nextme.chat_server.domain.chatRoom.RoomType;
 import org.nextme.chat_server.domain.chatRoomMember.ChatRoomMember;
 import org.nextme.chat_server.domain.chatRoomMember.ChatRoomMemberRepository;
 import org.nextme.chat_server.domain.chatRoomMember.MemberStatus;
+import org.nextme.chat_server.infrastructure.client.UserServiceClient;
 import org.nextme.chat_server.infrastructure.mybatis.dto.ChatRoomWithLastMessageDto;
+import org.nextme.chat_server.infrastructure.mybatis.mapper.ChatMessageQueryMapper;
 import org.nextme.chat_server.infrastructure.mybatis.mapper.ChatRoomQueryMapper;
 import org.nextme.common.security.UserPrincipal;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -54,6 +57,14 @@ public class ChatRoomService {
     private final ChatRoomMemberRepository roomMemberRepository;
     private final ChatMessageRepository messageRepository;
     private final ChatRoomQueryMapper chatRoomMapper;
+    private final UserServiceClient userServiceClient;
+
+    // 읽음 처리 구현
+    private final RedisTemplate<String, Object> redisTemplate;
+    private final ChatMessageQueryMapper chatMessageQueryMapper;
+    private static final String LAST_MESSAGE_KEY_PREFIX = "chat_room:";
+    private static final String LAST_MESSAGE_KEY_SUFFIX = ":last_message";
+
 
     /**
      * DTO → Response 변환
@@ -81,6 +92,7 @@ public class ChatRoomService {
 
         //로그인 사용자 매핑
         UUID userId = UUID.fromString(principal.userId());
+
 
         // 그룹 채팅방 조회
         if(RoomType.GROUP.equals(roomType)){
@@ -176,10 +188,16 @@ public class ChatRoomService {
                 throw new ChatRoomException(ChatRoomErrorCode.CHAT_ROOM_CREATE_EMPTY, "1:1 채팅방 생성 시 초대할 사용자 정보가 필요합니다");
             }
 
+            //전문가 채팅방생성 요청시 전문가 자격 검증
+            if(RoomType.ADVICE.equals(request.roomType())
+                    && principal.getRoles().stream().noneMatch(getRole -> (getRole.equals("ADVISOR")))){
+                throw new ChatRoomException(ChatRoomErrorCode.CHAT_ROOM_ROLE_BAD);
+            }
+
             try{
-                String title = String.format("%s님과 %s님의 대화",
-                        createUserName,
-                        request.invitedUserName());
+                String title = RoomType.DIRECT.equals(request.roomType())
+                        ? String.format("%s님과 %s님의 대화", createUserName, request.invitedUserName())
+                        : String.format("%s님의 %s님과의 상담", createUserName, request.invitedUserName());
 
                 //1:1 채팅방 생성
                 ChatRoom newChatRoom = ChatRoom.create(request.roomType(), title);
@@ -214,28 +232,26 @@ public class ChatRoomService {
             throw new ChatRoomException(ChatRoomErrorCode.CHAT_ROOM_JOIN_BAD);
         }
 
-        //채팅 멤버 조회
-        Optional<ChatRoomMember> member = roomMemberRepository
-                .findByChatRoomIdAndUserId(chatRoomId, UUID.fromString(principal.userId()));
+        UUID userId = UUID.fromString(principal.userId());
 
-        // 멤버 값 체크
-        if(member.isPresent()){
-            //값이 있으면
-            ChatRoomMember roomMember = member.get();
+        //채팅 멤버 조회 후, 없으면 생성 후에 가져옴
+        ChatRoomMember member = roomMemberRepository
+                .findByChatRoomIdAndUserId(chatRoomId, userId)
+                .orElseGet(()-> ChatRoomMember.join(chatRoomId, userId, principal.getName()));
 
-            // 상태가 LEFT 면
-            if(MemberStatus.LEFT.equals(roomMember.getStatus())){
-                roomMember.join();
-                roomMemberRepository.save(roomMember);
-            }
-        }else{
-            //값이 없으면
-            ChatRoomMember roomJoinMember = ChatRoomMember
-                    .join(chatRoomId, UUID.fromString(principal.userId()), principal.name());
-            roomMemberRepository.save(roomJoinMember);
+        //채팅 나간 멤버라면 joined
+        if(MemberStatus.LEFT.equals(member.getStatus())){
+            member.join();
         }
 
+        //마지막 메세지 읽음 처리
+        messageRepository.findTopByChatRoomIdOrderByCreatedAtDesc(chatRoomId)
+                .ifPresent(lastMessage -> {
+                    member.updateLastReadMessage(lastMessage.getId());
+                    log.info("메세지 읽음처리 로직");
+                });
 
+        roomMemberRepository.save(member);
     }
 
     /**
@@ -277,6 +293,65 @@ public class ChatRoomService {
             roomMemberRepository.deleteByChatRoomId(chatRoomId);
         }
     }
+
+    /**
+     * 채팅방 생성 리스너
+     * @param
+     * @return
+     */
+    public void listenChatRoomCreated(UUID advisorId, UUID userId, LocalDateTime reservationStartTime, LocalDateTime reservationEndTime, UUID reservationUserId) {
+
+        if (advisorId == null || userId == null) {
+            throw new ChatRoomException(ChatRoomErrorCode.CHAT_ROOM_CREATE_EMPTY, "전문가 상담 채팅방 생성 시 전문가와 사용자의 정보가 필요합니다");
+        }
+        String advisorName = userServiceClient.getUser(advisorId).name();
+        String userName = userServiceClient.getUser(userId).name();
+
+
+        try{
+            String title = "";
+
+            if(!advisorName.isEmpty() || !userName.isEmpty()){
+                title = String.format("%s님의 %s님과의 상담", advisorName, userName);
+            }else {
+                title = "상담방";
+            }
+
+            //1:1 채팅방 생성
+            ChatRoom newChatRoom = ChatRoom.create(RoomType.ADVICE, title);
+            newChatRoom.ReservationChatRoom(reservationUserId, reservationStartTime, reservationEndTime);
+
+            roomRepository.save(newChatRoom);
+
+            //전문가 맴버 채팅방에 추가
+            ChatRoomMember roomCreateMember = ChatRoomMember.join(newChatRoom.getId(), advisorId, advisorName);
+            roomMemberRepository.save(roomCreateMember);
+
+            //채팅방 초대받은 멤버
+            ChatRoomMember roomInvitedMember = ChatRoomMember.join(newChatRoom.getId(), userId, userName);
+            roomMemberRepository.save(roomInvitedMember);
+
+        }catch(Exception e){
+            throw new ChatRoomException(ChatRoomErrorCode.CHAT_ROOM_REQUEST_DIRECT);
+        }
+    }
+
+    /**
+     * 채팅방 예약 취소 리스너
+     * @param
+     * @return
+     */
+    public void listenChatRoomCancel(UUID reservationId) {
+        ChatRoom chatRoom = roomRepository.findByReservationId(reservationId);
+
+        if (chatRoom == null) {
+            throw new ChatRoomException(ChatRoomErrorCode.CHAT_ROOM_NOT_FOUND);
+        }
+
+        chatRoom.markAsDeleted("system");
+        roomRepository.save(chatRoom);
+    }
+
 
 
     /**

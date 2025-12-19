@@ -35,5 +35,23 @@
         LIMIT #{size}
     </select>
 
+    <select id="getUnreadCounts" resultType="map">
+        SELECT
+            p.chat_room_id as chatRoomId,
+            COUNT(m.chat_message_id) as unreadCount
+        FROM
+            (
+                <foreach collection="params" item="param" separator="UNION ALL">
+                    SELECT #{param.chatRoomId}::uuid AS chat_room_id, #{param.lastReadAt}::timestamp AS last_read_at
+                </foreach>
+            )p
+        LEFT JOIN
+                p_chat_message m
+                    ON p.chat_room_id = m.chat_room_id
+                           AND m.created_at > p.last_read_at
+        GROUP BY
+            p.chat_room_id
+
+    </select>
 
 </mapper>
