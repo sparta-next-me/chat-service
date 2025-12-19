@@ -58,8 +58,7 @@
           AND mem.status = 'JOINED'
           AND (rm.reservation_start_time IS NULL
                    OR (rm.reservation_start_time IS NOT NULL
-                           AND NOW() BETWEEN(rm.reservation_start_time - INTERVAL '10 minutes')
-                               AND(rm.reservation_end_time + INTERVAL '10 minutes')))
+                           AND NOW() >= (rm.reservation_start_time - INTERVAL '10 minutes')))
         ORDER BY rm.updated_at DESC
     </select>
 </mapper>
