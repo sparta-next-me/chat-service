@@ -1,5 +1,6 @@
 package org.nextme.chat_server.domain.chatMessage;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.Builder;
 import lombok.Getter;
@@ -19,6 +20,7 @@ import java.util.UUID;
 @NoArgsConstructor
 @Table(name="p_chat_message")
 @SQLRestriction("deleted_at IS NULL")
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class ChatMessage extends BaseEntity {
 
     @EmbeddedId

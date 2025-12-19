@@ -22,6 +22,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.nextme.chat_server.application.dto.ChatMessageRequest;
 import org.nextme.chat_server.application.dto.ChatMessageResponse;
+import org.nextme.chat_server.application.dto.LastMessageCacheDto;
 import org.nextme.chat_server.domain.chatMessage.ChatMessage;
 import org.nextme.chat_server.domain.chatMessage.ChatMessageId;
 import org.nextme.chat_server.domain.chatMessage.ChatMessageRepository;
@@ -32,10 +33,12 @@ import org.nextme.chat_server.domain.chatRoomMember.ChatRoomMemberRepository;
 import org.nextme.chat_server.infrastructure.mybatis.dto.MessageHistoryDto;
 import org.nextme.chat_server.infrastructure.mybatis.mapper.ChatMessageQueryMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
@@ -51,8 +54,14 @@ public class ChatMessageService {
     private final ChatMessageRepository chatMessageRepository;
     private final ChatMessageQueryMapper chatMessageMapper;
     private final SimpMessagingTemplate simpMessagingTemplate;
-    private final MessageProducer producer;
     private final ChatBotService chatBotService;
+    private final ChatRoomMemberRepository chatRoomMemberRepository;
+    private final RedisTemplate<String, Object> redisTemplate;
+
+    //캐시용 상수
+    private static final String LAST_MESSAGE_KEY_PREFIX = "chat_room:";
+    private static final String LAST_MESSAGE_KEY_SUFFIX = ":last_message";
+    private static final Duration CACHE_TTL = Duration.ofDays(1);
 
     /**
      * DTO → Response 변환
@@ -79,8 +88,6 @@ public class ChatMessageService {
         log.info("메세지 전송 - roomId = {}, senderId = {}, senderName = {}, sessionId = {} ,request = {}"
                 , roomId, senderId, senderName, sessionId, request);
 
-        //TODO: 사용자 값 검증 캐싱해서 확인
-
         //메세지 생성
         ChatMessage message = ChatMessage.create(
                 roomId,
@@ -93,7 +100,12 @@ public class ChatMessageService {
         ChatMessageResponse response = ChatMessageResponse
                 .from(chatMessageRepository.save(message));
 
-        //TODO: 방 최근 메세지 redis 업데이트
+        //마지막 메세지 저장 비동기로 처리
+        CompletableFuture.runAsync(() -> {
+            updateLastMessage(roomId, senderId, response.messageId());
+            cacheLastMessage(roomId, response);
+        });
+
 
         // 방 타입이 챗봇일 경우 분기
         if(request.roomType() != null && RoomType.AI.equals(request.roomType())){
@@ -130,6 +142,38 @@ public class ChatMessageService {
         }
         return null;
     }
+
+    /**
+     * 마지막 메세지 캐싱
+     * @param
+     * @return
+     */
+    public void cacheLastMessage(ChatRoomId roomId, ChatMessageResponse response){
+        String key = LAST_MESSAGE_KEY_PREFIX + roomId.getChatRoomId().toString() + LAST_MESSAGE_KEY_SUFFIX;
+        LastMessageCacheDto cacheDto = new LastMessageCacheDto(
+                response.messageId().getChatMessageId(),
+                response.content(),
+                response.senderId(),
+                response.senderName(),
+                response.createdAt()
+        );
+        redisTemplate.opsForValue().set(key, cacheDto, CACHE_TTL);
+        log.info("채팅방 마지막 메세지 캐싱 - key = {}", key);
+    }
+
+    /**
+     * 마지막 메세지 저장
+     * @param
+     * @return
+     */
+    public void updateLastMessage(ChatRoomId roomId, UUID senderId, ChatMessageId messageId){
+        chatRoomMemberRepository.findByChatRoomIdAndUserId(roomId, senderId).ifPresent(member -> {
+            member.updateLastReadMessage(messageId);
+            chatRoomMemberRepository.save(member);
+        });
+        log.info("마지막 읽은 메세지 업데이트");
+    }
+
 
     /**
      * 채팅방 메세지 히스토리 조회
