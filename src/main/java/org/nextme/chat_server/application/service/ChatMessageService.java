@@ -100,12 +100,11 @@ public class ChatMessageService {
         ChatMessageResponse response = ChatMessageResponse
                 .from(chatMessageRepository.save(message));
 
-        //마지막 메세지 저장 비동기로 처리
+        //채팅방 마지막 메세지 저장 비동기로 처리
         CompletableFuture.runAsync(() -> {
-            updateLastMessage(roomId, senderId, response.messageId());
             cacheLastMessage(roomId, response);
+            //updateLastMessage(roomId, senderId, response.messageId());
         });
-
 
         // 방 타입이 챗봇일 경우 분기
         if(request.roomType() != null && RoomType.AI.equals(request.roomType())){
