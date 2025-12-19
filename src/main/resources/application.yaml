@@ -94,6 +94,7 @@ logging:
     org.mybatis: DEBUG
     org.apache.ibatis: DEBUG
     org.nextme.chat_server.infrastructure.mybatis.mapper: DEBUG
+    org.nextme.chat_server.infrastructure.client: DEBUG
 
 # OPEN DOC API 설정
 springdoc:
