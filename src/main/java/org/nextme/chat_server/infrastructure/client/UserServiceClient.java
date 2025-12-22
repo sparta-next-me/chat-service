@@ -10,5 +10,5 @@ import java.util.UUID;
 @FeignClient("user-service")
 public interface UserServiceClient {
     @GetMapping("/v1/user/feign/profile")
-    UserResponse getUser(@RequestParam UUID userId);
+    CommonResponse<UserResponse>  getUser(@RequestParam UUID userId);
 }
