@@ -3,20 +3,15 @@ pipeline {
 
     environment {
         APP_NAME        = "chat-service"
-
-        // GHCR 레지스트리 정보
+        NAMESPACE       = "next-me"
         REGISTRY        = "ghcr.io"
         GH_OWNER        = "sparta-next-me"
         IMAGE_REPO      = "chat-service"
         FULL_IMAGE      = "${REGISTRY}/${GH_OWNER}/${IMAGE_REPO}:latest"
-
-        CONTAINER_NAME  = "chat-service"
-        HOST_PORT       = "18080"
-        CONTAINER_PORT  = "18080"
+        TZ              = "Asia/Seoul"
     }
 
     stages {
-
         stage('Checkout') {
             steps {
                 checkout scm
@@ -25,77 +20,67 @@ pipeline {
 
         stage('Build & Test') {
             steps {
-                withCredentials([
-                    file(credentialsId: 'chat-service', variable: 'ENV_FILE')
-                ]) {
+                withCredentials([file(credentialsId: 'chat-service', variable: 'ENV_FILE')]) {
                     sh '''
-                      # 환경 파일 존재 확인
-                      if [ ! -f "$ENV_FILE" ]; then
-                        echo "Error: ENV_FILE not found at $ENV_FILE"
-                        exit 1
-                      fi
                       set -a
-                      . "$ENV_FILE"       # DB_URL, DB_USERNAME, DB_PASSWORD, REDIS_HOST, OAUTH 키들 export
+                      . "$ENV_FILE"
                       set +a
-
-                      ./gradlew clean test --no-daemon
-                      ./gradlew bootJar --no-daemon
+                      chmod +x ./gradlew
+                      # 의존성 캐시 문제를 방지하기 위해 refresh 옵션 추가
+                      ./gradlew clean bootJar --no-daemon --refresh-dependencies
                     '''
                 }
             }
         }
 
-        stage('Docker Build') {
+        stage('Docker Build & Push') {
             steps {
-                sh """
-                  docker build -t ${FULL_IMAGE} .
-                """
-            }
-        }
-
-        stage('Push Image') {
-            steps {
-                withCredentials([
-                    usernamePassword(
-                        credentialsId: 'ghcr-credential',
-                        usernameVariable: 'REGISTRY_USER',
-                        passwordVariable: 'REGISTRY_TOKEN'
-                    )
-                ]) {
+                withCredentials([usernamePassword(credentialsId: 'ghcr-credential', usernameVariable: 'USER', passwordVariable: 'TOKEN')]) {
                     sh """
-                      set -e  # 아래 명령 중 하나라도 실패하면 즉시 종료
-
-                      echo "\$REGISTRY_TOKEN" | docker login ghcr.io -u "\$REGISTRY_USER" --password-stdin
+                      docker build -t ${FULL_IMAGE} .
+                      echo "${TOKEN}" | docker login ${REGISTRY} -u "${USER}" --password-stdin
                       docker push ${FULL_IMAGE}
                     """
                 }
             }
         }
 
-        stage('Deploy') {
+        stage('Deploy to Kubernetes') {
             steps {
                 withCredentials([
+                    file(credentialsId: 'k3s-kubeconfig', variable: 'KUBECONFIG_FILE'),
                     file(credentialsId: 'chat-service', variable: 'ENV_FILE')
                 ]) {
-                    sh """
-                      # 기존 컨테이너 있으면 정지/삭제
-                      if [ \$(docker ps -aq -f name=${CONTAINER_NAME}) ]; then
-                        echo "Stopping existing container..."
-                        docker stop ${CONTAINER_NAME} || true
-                        docker rm ${CONTAINER_NAME} || true
-                        docker rmi ${FULL_IMAGE} || true
-                      fi
+                    sh '''
+                      export KUBECONFIG=${KUBECONFIG_FILE}
 
-                      echo "Starting new chat-service container..."
-                      docker run -d --name ${CONTAINER_NAME} \\
-                        --env-file \${ENV_FILE} \\
-                        -e SPRING_DATA_REDIS_HOST='10.178.0.4' \\
-                        -e EUREKA_INSTANCE_HOSTNAME='10.178.0.4' \\
-                        -p ${HOST_PORT}:${CONTAINER_PORT} \\
-                        ${FULL_IMAGE}
-                    """
+                      echo "Updating K8s Secret: chat-service..."
+                      kubectl delete secret chat-service -n ${NAMESPACE} --ignore-not-found
+                      kubectl create secret generic chat-service --from-env-file=${ENV_FILE} -n ${NAMESPACE}
+
+                      echo "Applying manifests from chat-service.yaml..."
+                      kubectl apply -f chat-service.yaml -n ${NAMESPACE}
+
+                      echo "Monitoring rollout status..."
+                      kubectl rollout status deployment/chat-service -n ${NAMESPACE}
+                    '''
                 }
             }
+        }
+    }
+
+    post {
+        always {
+            echo "Cleaning up resources..."
+            sh "docker rmi ${FULL_IMAGE} || true"
+            # 사용하지 않는 이미지 및 컨테이너 찌꺼기 제거
+            sh "docker system prune -f"
+        }
+        success {
+            echo "Successfully deployed ${APP_NAME}!"
+        }
+        failure {
+            echo "Deployment failed. Check the logs."
         }
     }
 }

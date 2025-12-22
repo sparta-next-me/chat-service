@@ -14,13 +14,12 @@ spring:
     name: chat-service
 
   config:
-    import: 'optional:configserver:'
-
-  #config server 임시 차단
+    # 유레카를 거치지 않고 직접 쿠버네티스 서비스 주소로 찌름
+    import: 'optional:configserver:http://config-server.next-me.svc.cluster.local:3100'
   cloud:
     config:
-      enabled: true
-      service-id: config-server
+      discovery:
+        enabled: false
 
   jpa:
     show-sql: true
@@ -135,14 +134,10 @@ mybatis:
 
 eureka:
   instance:
-    prefer-ip-address: false
-    hostname: localhost
-
+    prefer-ip-address: true
   client:
-    register-with-eureka: true
-    fetch-registry: true
     service-url:
-      defaultZone: ${EUREKA_URL}
+      defaultZone: http://eureka-server.next-me.svc.cluster.local:3151/eureka/
 
 management:
   endpoints:
