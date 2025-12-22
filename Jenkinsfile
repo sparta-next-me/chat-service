@@ -73,7 +73,6 @@ pipeline {
         always {
             echo "Cleaning up resources..."
             sh "docker rmi ${FULL_IMAGE} || true"
-            # 사용하지 않는 이미지 및 컨테이너 찌꺼기 제거
             sh "docker system prune -f"
         }
         success {
