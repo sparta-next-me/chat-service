@@ -1,0 +1,80 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: chat-service
+  namespace: next-me
+  labels:
+    app: chat-service
+spec:
+  replicas: 1
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 25%
+      maxSurge: 25%
+  selector:
+    matchLabels:
+      app: chat-service
+  template:
+    metadata:
+      labels:
+        app: chat-service
+    spec:
+      imagePullSecrets:
+        - name: ghcr-cred
+      containers:
+        - name: chat-service
+          image: ghcr.io/sparta-next-me/chat-service:latest
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 18080 # chat-service 포트
+
+          envFrom:
+            - secretRef:
+                name: chat-service
+
+          env:
+            - name: SPRING_PROFILES_ACTIVE
+              value: "prod"
+            # Config Server 직접 연결 (에러 방지)
+            - name: SPRING_CONFIG_IMPORT
+              value: "optional:configserver:http://config-server.next-me.svc.cluster.local:3100"
+            - name: SPRING_CLOUD_CONFIG_DISCOVERY_ENABLED
+              value: "false"
+            - name: JAVA_OPTS
+              value: "-Xms512m -Xmx768m"
+
+          readinessProbe:
+            httpGet:
+              path: /actuator/health
+              port: 18080
+            initialDelaySeconds: 100
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /actuator/health
+              port: 18080
+            initialDelaySeconds: 150
+            periodSeconds: 20
+
+          resources:
+            requests:
+              cpu: "200m"
+              memory: "512Mi"
+            limits:
+              cpu: "1000m"
+              memory: "1Gi"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: chat-service
+  namespace: next-me
+spec:
+  selector:
+    app: chat-service
+  ports:
+    - name: http
+      port: 18080
+      targetPort: 18080
+  type: ClusterIP
