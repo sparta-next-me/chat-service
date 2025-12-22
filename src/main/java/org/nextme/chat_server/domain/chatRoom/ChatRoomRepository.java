@@ -12,6 +12,4 @@ import java.util.UUID;
 public interface ChatRoomRepository extends JpaRepository<ChatRoom, ChatRoomId> {
     List<ChatRoom> findAllByRoomType(RoomType roomType);
     ChatRoom findByReservationId(UUID reservationId);
-
-
 }
