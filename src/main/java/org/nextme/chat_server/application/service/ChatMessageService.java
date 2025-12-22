@@ -35,6 +35,7 @@ import org.nextme.chat_server.infrastructure.mybatis.mapper.ChatMessageQueryMapp
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -42,6 +43,7 @@ import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
@@ -61,6 +63,7 @@ public class ChatMessageService {
     //캐시용 상수
     private static final String LAST_MESSAGE_KEY_PREFIX = "chat_room:";
     private static final String LAST_MESSAGE_KEY_SUFFIX = ":last_message";
+    private static final String UPDATED_ROOMS_KEY = "chat:updated_rooms";
     private static final Duration CACHE_TTL = Duration.ofDays(1);
 
     /**
@@ -156,7 +159,10 @@ public class ChatMessageService {
                 response.senderName(),
                 response.createdAt()
         );
+        // 채팅방 마지막 메세지 캐싱
         redisTemplate.opsForValue().set(key, cacheDto, CACHE_TTL);
+        // 업데이트된 채팅방 목록
+        redisTemplate.opsForSet().add(UPDATED_ROOMS_KEY, roomId.getChatRoomId().toString());
         log.info("채팅방 마지막 메세지 캐싱 - key = {}", key);
     }
 
@@ -172,6 +178,40 @@ public class ChatMessageService {
         });
         log.info("마지막 읽은 메세지 업데이트");
     }
+
+    /**
+     * 캐싱된 메세지 DB에 저장 후 삭제
+     * @param  
+     * @return 
+     */
+    @Scheduled(fixedDelay = 1000) // 1초
+    @Transactional
+    public void syncLastMessages() {
+        // redis의 업데이트된 채팅방 목록 가져오기
+        Set<Object> roomIds = redisTemplate.opsForSet().members(UPDATED_ROOMS_KEY);
+
+        if (roomIds == null || roomIds.isEmpty()) return;
+
+        // 하나씩 처리
+        for (Object roomIdObj : roomIds) {
+            try {
+                // 캐시된 채팅방 찾기
+                UUID roomId = UUID.fromString(roomIdObj.toString());
+                String key = LAST_MESSAGE_KEY_PREFIX + roomId + LAST_MESSAGE_KEY_SUFFIX;
+                LastMessageCacheDto cache = (LastMessageCacheDto) redisTemplate.opsForValue().get(key);
+
+                if (cache != null) {
+                    // 마지막 메세지 저장
+                    updateLastMessage(ChatRoomId.of(roomId), cache.senderId(), ChatMessageId.of(cache.messageId()));
+                    // 업데이트 목록에서 삭제
+                    redisTemplate.opsForSet().remove(UPDATED_ROOMS_KEY, roomIdObj);
+                }
+            } catch (Exception e) {
+                log.error("마지막 메시지 동기화 실패 - roomId: {}", roomIdObj, e);
+            }
+        }
+    }
+
 
 
     /**
