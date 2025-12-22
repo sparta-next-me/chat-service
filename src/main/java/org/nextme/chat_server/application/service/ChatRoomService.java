@@ -304,14 +304,23 @@ public class ChatRoomService {
         if (advisorId == null || userId == null) {
             throw new ChatRoomException(ChatRoomErrorCode.CHAT_ROOM_CREATE_EMPTY, "전문가 상담 채팅방 생성 시 전문가와 사용자의 정보가 필요합니다");
         }
-        String advisorName = userServiceClient.getUser(advisorId).name();
-        String userName = userServiceClient.getUser(userId).name();
 
+        String advisorName = "";
+        String userName = "";
+        try{
+            advisorName = userServiceClient.getUser(advisorId).result().name();
+            userName = userServiceClient.getUser(userId).result().name();
+            log.info("Feign response = {}, {}", advisorName, userName);
+        }catch(Exception e){
+            log.error("Feign 호출 실패 advisorId={}, {}", advisorId, userId, e);
+            throw new ChatRoomException(ChatRoomErrorCode.CHAT_ROOM_CREATE_EMPTY,
+                    "user-service 호출 중 오류 발생");
+        }
 
         try{
             String title = "";
 
-            if(!advisorName.isEmpty() || !userName.isEmpty()){
+            if(!advisorName.isBlank() || !userName.isBlank()){
                 title = String.format("%s님의 %s님과의 상담", advisorName, userName);
             }else {
                 title = "상담방";
